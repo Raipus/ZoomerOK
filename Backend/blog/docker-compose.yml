@@ -1,0 +1,19 @@
+version: '3'
+
+
+services:
+
+  server:
+    build: .
+    command: ./blog
+    restart: always
+    container_name: blog_server
+    ports:
+      - 8081:8081
+    networks:
+      - gateway_network
+
+
+networks:
+  gateway_network:
+    external: true

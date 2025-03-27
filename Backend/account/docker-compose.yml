@@ -1,0 +1,19 @@
+version: '3'
+
+
+services:
+
+  server:
+    build: .
+    command: ./account
+    restart: always
+    container_name: account_server
+    ports:
+      - 8080:8080
+    networks:
+      - gateway_network
+
+
+networks:
+  gateway_network:
+    external: true
