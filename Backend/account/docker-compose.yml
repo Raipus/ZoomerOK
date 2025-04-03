@@ -1,6 +1,7 @@
 version: '3'
 
 
+# TODO: проверить Docker-compose с postgres
 services:
 
   server:

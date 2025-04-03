@@ -15,6 +15,8 @@ type server struct {
 	pb.UnimplementedAccountServer
 }
 
+// TODO: продумать авторизацию
+// TODO: Развить микросервисную коммуникацию
 func (s *server) Authorization(ctx context.Context, req *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
 	s := strings.Split(req.Token, ":")
 	if s[0] != "Token" || !postgres.UUIDExists(s[1]) {

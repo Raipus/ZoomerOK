@@ -6,7 +6,7 @@ import (
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
 	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
-	"github.com/gin-gonic/gin"
+	"github.com/Raipus/ZoomerOK/account/pkg/router"
 )
 
 var (
@@ -14,14 +14,13 @@ var (
 )
 
 func run_http_server() {
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
-	router.Use(gin.Logger())
+	router := router.SetupRouter(true)
 	router.POST(config.Config.Prefix+"/registry", handlers.Registry)
 	router.POST(config.Config.Prefix+"/login", handlers.Login)
 	router.Run(http_server)
 }
 
+// TODO: linter
 func main() {
 	postgres.Init()
 	postgres.Migrate()
