@@ -18,7 +18,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	logined, error := postgres.Login(LoginForm.Email, LoginForm.Password)
+	logined, error := postgres.Login(newLoginForm.Email, newLoginForm.Password)
 	if !logined {
 		if error == "Ошибка сервера" {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": error})
@@ -27,6 +27,6 @@ func Login(c *gin.Context) {
 		}
 		return
 	} else {
-		c.JSON(http.StatusOK)
+		c.JSON(http.StatusOK, gin.H{})
 	}
 }

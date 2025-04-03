@@ -3,7 +3,7 @@ package postgres
 import (
 	"log"
 
-	"github.com/Raipus/ZoomerOK/account/pkg/security/hash"
+	"github.com/Raipus/ZoomerOK/account/pkg/security"
 	"gorm.io/gorm"
 )
 
@@ -11,13 +11,9 @@ func CreateUser(user *User) {
 	Instance.Create(&user)
 }
 
-func UpdateUser(user *User) {
-	Instance.Model(&Settings{}).Where("UUID = ?", UUID).Updates(map[string]interface{}{"ColorBlindnessType": ColorBlindnessType, "Degree": Degree})
-}
-
 func Login(email string, password string) (bool, string) {
 	var user User
-	result := Instance.Where(&User{Email: email}).Find(&user)
+	result := Instance.Where(&User{Email: email}).First(&user)
 
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
@@ -27,7 +23,7 @@ func Login(email string, password string) (bool, string) {
 		return false, "Ошибка сервера"
 	}
 
-	checked := hash.CheckPasswordHash(password, user.Password)
+	checked := security.CheckPasswordHash(password, user.Password)
 	if !checked {
 		return false, "Неверный пароль"
 	}
@@ -47,30 +43,16 @@ func DeleteUser(uuid string) {
 	Instance.Delete(&user)
 }
 
-func CreateFriendRequest(uuid1 string, uuid2 string) {
-	var user1 User
-	var user2 User
-	Instance.Create(&Friend{User1: user1, User2: user2, Accepted: false})
-}
-
 func AcceptFriendRequest(uuid1 string, uuid2 string) {
 	var friend Friend
-	var user1 User
-	var user2 User
-	Instance.Where(&User{UUID: uuid1}).Find(&user1)
-	Instance.Where(&User{UUID: uuid2}).Find(&user2)
-	Instance.Where(&Friend{User1: user1, User2: user2}).Find(&friend)
+	Instance.Where(&Friend{User1UUID: uuid1, User2UUID: uuid2}).Find(&friend)
 	friend.Accepted = true
 	Instance.Save(&friend)
 }
 
 func DeleteFriendRequest(uuid1 string, uuid2 string) {
 	var friend Friend
-	var user1 User
-	var user2 User
-	Instance.Where(&User{UUID: uuid1}).Find(&user1)
-	Instance.Where(&User{UUID: uuid2}).Find(&user2)
-	Instance.Where(&Friend{User1: user1, User2: user2}).Find(&friend)
+	Instance.Where(&Friend{User1UUID: uuid1, User2UUID: uuid2}).Find(&friend)
 	Instance.Delete(&friend)
 }
 

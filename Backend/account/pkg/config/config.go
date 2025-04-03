@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -37,11 +38,16 @@ func LoadConfig() (c *ConfigType) {
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
+		panic(fmt.Errorf("fatal error config file: %s \n", err))
+	}
+
+	viper.SetConfigName("prod.db") // Имя второго файла без расширения
+	if err := viper.MergeInConfig(); err != nil {
+		panic(fmt.Errorf("fatal error merging config file: %s \n", err))
 	}
 
 	if err := viper.Unmarshal(&c); err != nil {
-		panic(err)
+		panic(fmt.Errorf("unable to decode into struct, %v", err))
 	}
 
 	return

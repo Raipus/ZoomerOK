@@ -17,7 +17,7 @@ func run_http_server() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.Use(gin.Logger())
-	router.POST(config.Config.Prefix+"/registry", handlers.Registry)
+	// router.POST(config.Config.Prefix+"/registry", handlers.Registry)
 	router.POST(config.Config.Prefix+"/login", handlers.Login)
 	router.Run(http_server)
 }

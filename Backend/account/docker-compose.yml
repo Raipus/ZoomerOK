@@ -12,8 +12,27 @@ services:
       - 8080:8080
     networks:
       - gateway_network
+      - server_db
+
+  db:
+    image: postgres
+    restart: always
+    container_name: account_db
+    env_file:
+      - ./pkg/config/envs/prod.db.env
+    volumes:
+      - data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - server_db
+
+
+volumes:
+  data:
 
 
 networks:
   gateway_network:
     external: true
+  server_db:
