@@ -1,0 +1,34 @@
+package postgres
+
+import (
+	"fmt"
+	"log"
+	"strconv"
+
+	"github.com/Raipus/ZoomerOK/account/pkg/config"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+)
+
+func Init() {
+	Instance, dbError = gorm.Open(postgres.New(postgres.Config{
+		DSN: fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",
+			config.Config.PostgresUser,
+			config.Config.PostgresPassword,
+			config.Config.PostgresHost,
+			strconv.Itoa(config.Config.PostgresPort),
+			config.Config.PostgresDb),
+		PreferSimpleProtocol: true, // disables implicit prepared statement usage
+	}), &gorm.Config{})
+
+	if dbError != nil {
+		panic("failed to connect database")
+	}
+
+	log.Println("Connected to Database!")
+}
+
+func Migrate() {
+	Instance.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(&Settings{})
+	log.Println("Database Migration Completed!")
+}
