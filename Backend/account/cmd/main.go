@@ -1,16 +1,30 @@
 package main
 
 import (
+	"strconv"
+
+	"github.com/Raipus/ZoomerOK/account/pkg/config"
+	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
+	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	r := gin.Default()
+var (
+	http_server = config.Config.Host + ":" + strconv.Itoa(config.Config.HttpPort)
+)
+
+func run_http_server() {
 	gin.SetMode(gin.ReleaseMode)
+	router := gin.Default()
+	router.Use(gin.Logger())
+	router.POST(config.Config.Prefix+"/registry", handlers.Registry)
+	router.POST(config.Config.Prefix+"/login", handlers.Login)
+	router.Run(http_server)
+}
 
-	r.GET("/", func(c *gin.Context) {
-		c.String(200, "Это микросервис для аккаунта.")
-	})
+func main() {
+	postgres.Init()
+	postgres.Migrate()
 
-	r.Run(":8080")
+	run_http_server()
 }
