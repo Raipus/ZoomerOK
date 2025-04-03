@@ -46,3 +46,12 @@ func DeleteFriendRequest(uuid1 string, uuid2 string) {
 	Instance.Where(&Friend{User1: user1, User2: user2}).Find(&friend)
 	Instance.Delete(&friend)
 }
+
+func UUIDExists(uuid string) bool {
+	var exists bool
+	err := Instance.Model(&User{}).Where("UUID = ?", uuid).Find(&exists)
+	if err != nil {
+		return false
+	}
+	return exists
+}
