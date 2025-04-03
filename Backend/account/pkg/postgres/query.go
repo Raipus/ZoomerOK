@@ -1,11 +1,38 @@
 package postgres
 
+import (
+	"log"
+
+	"github.com/Raipus/ZoomerOK/account/pkg/security/hash"
+	"gorm.io/gorm"
+)
+
 func CreateUser(user *User) {
 	Instance.Create(&user)
 }
 
 func UpdateUser(user *User) {
 	Instance.Model(&Settings{}).Where("UUID = ?", UUID).Updates(map[string]interface{}{"ColorBlindnessType": ColorBlindnessType, "Degree": Degree})
+}
+
+func Login(email string, password string) (bool, string) {
+	var user User
+	result := Instance.Where(&User{Email: email}).Find(&user)
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return false, "Неверный email"
+		}
+		log.Println("Ошибка базы данных:", result.Error)
+		return false, "Ошибка сервера"
+	}
+
+	checked := hash.CheckPasswordHash(password, user.Password)
+	if !checked {
+		return false, "Неверный пароль"
+	}
+
+	return true, ""
 }
 
 func GetUser(uuid string) User {
