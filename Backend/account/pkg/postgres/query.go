@@ -4,13 +4,20 @@ import (
 	"log"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/security"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-func CreateUser(user *User) {
-	Instance.Create(&user)
+func CreateUser(user *User) bool {
+	result := Instance.Create(&user)
+	if result.Error != nil {
+		return false
+	}
+
+	return true
 }
 
+// TODO: написать валидацию данных
 func Login(email string, password string) (bool, string) {
 	var user User
 	result := Instance.Where(&User{Email: email}).First(&user)
@@ -29,6 +36,26 @@ func Login(email string, password string) (bool, string) {
 	}
 
 	return true, ""
+}
+
+// TODO: написать валидацию данных
+func Registry(name string, email string, password string) bool {
+	hashedPassword, err := security.HashPassword(password)
+	if err != nil {
+		return false
+	}
+
+	newUUID := uuid.New().String()
+	user := User{
+		UUID:     newUUID,
+		Name:     name,
+		Email:    email,
+		Password: hashedPassword,
+		Phone:    "",
+		City:     "",
+	}
+
+	return CreateUser(&user)
 }
 
 func GetUser(uuid string) User {

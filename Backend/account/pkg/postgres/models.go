@@ -9,12 +9,12 @@ import (
 type User struct {
 	gorm.Model
 	UUID     string     `gorm:"type:uuid;default:uuid_generate_v4();unique;not null"`
+	Name     string     `gorm:"not null"`
 	Email    string     `gorm:"not null;unique"`
 	Password string     `gorm:"not null"`
-	Name     string     `gorm:"not null"`
-	Birthday *time.Time `gorm:"not null"`
-	Phone    string     `gorm:"not null"`
-	City     string     `gorm:"not null"`
+	Birthday *time.Time `gorm:"default:null"`
+	Phone    string     `gorm:"default:null"`
+	City     string     `gorm:"default:null"`
 }
 
 type Friend struct {
