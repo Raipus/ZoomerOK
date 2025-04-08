@@ -19,7 +19,7 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	token, registered := postgres.Registry(newSignupForm.Name, newSignupForm.Email, newSignupForm.Password)
+	token, registered := postgres.Signup(newSignupForm.Name, newSignupForm.Email, newSignupForm.Password)
 
 	if registered {
 		c.JSON(http.StatusOK, gin.H{

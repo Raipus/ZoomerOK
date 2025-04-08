@@ -15,12 +15,16 @@ type ConfigType struct {
 	PostgresUser     string `mapstructure:"POSTGRES_USER"`
 	PostgresDb       string `mapstructure:"POSTGRES_DB"`
 
-	Host      string `mapstructure:"HOST"`
-	HttpPort  int    `mapstructure:"HTTP_PORT"`
-	Prefix    string `mapstructure:"PREFIX"`
-	SecretKey string `mapstructure:"SECRET_KEY"`
-
-	Photo PhotoConfig
+	Host                string `mapstructure:"HOST"`
+	HttpPort            int    `mapstructure:"HTTP_PORT"`
+	Prefix              string `mapstructure:"PREFIX"`
+	SecretKey           string `mapstructure:"SECRET_KEY"`
+	TimeCache           uint   `mapstructure:"TIME_CACHE"`
+	ConfirmationCache   string `mapstructure:"CONFIRMATION_CACHE"`
+	ResetCache          string `mapstructure:"RESET_CACHE"`
+	GenerateLinkLength  string `mapstructure:"GENERATE_LINK_LENGTH"`
+	GenerateLinkCharset string `mapstructure:"GENERATE_LINK_CHARSET"`
+	Photo               PhotoConfig
 }
 
 type PhotoConfig struct {
@@ -59,6 +63,11 @@ func LoadConfig() (c *ConfigType) {
 	viper.SetConfigName("image")
 	if err := viper.MergeInConfig(); err != nil {
 		fmt.Printf("Ошибка при объединении файла image.env: %s\n", err)
+	}
+
+	viper.SetConfigName("smtp")
+	if err := viper.MergeInConfig(); err != nil {
+		fmt.Printf("Ошибка при объединении файла smtp.env: %s\n", err)
 	}
 
 	c = new(ConfigType)
