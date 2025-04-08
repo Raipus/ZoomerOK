@@ -1,24 +1,25 @@
 package handlers
 
 import (
-	"strings"
+	"net/http"
 
-	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
+	"github.com/Raipus/ZoomerOK/account/pkg/security"
 	"github.com/gin-gonic/gin"
 )
 
-func Authorization() gin.HandlerFunc {
+func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.Request.Header.Get("Authorization")
-
-		if token == "" {
-			c.AbortWithStatusJSON(401, gin.H{"error": "API token required"})
+		tokenString := c.Request.Header.Get("Authorization")
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is missing"})
+			c.Abort()
 			return
 		}
 
-		s := strings.Split(token, ":")
-		if s[0] != "Token" || !postgres.UUIDExists(s[1]) {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid API token required"})
+		token, err := security.ValidateJWT(tokenString)
+		if err != nil || !token.Valid {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.Abort()
 			return
 		}
 

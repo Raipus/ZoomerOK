@@ -15,7 +15,7 @@ var (
 
 func run_http_server() {
 	router := router.SetupRouter(true)
-	router.POST(config.Config.Prefix+"/registry", handlers.Registry)
+	router.POST(config.Config.Prefix+"/signup", handlers.Signup)
 	router.POST(config.Config.Prefix+"/login", handlers.Login)
 	router.Run(http_server)
 }

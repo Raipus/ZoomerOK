@@ -1,8 +1,10 @@
 package postgres
 
 import (
+	"encoding/base64"
 	"log"
 
+	"github.com/Raipus/ZoomerOK/account/pkg/config"
 	"github.com/Raipus/ZoomerOK/account/pkg/security"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -39,10 +41,10 @@ func Login(email string, password string) (bool, string) {
 }
 
 // TODO: написать валидацию данных
-func Registry(name string, email string, password string) bool {
+func Registry(name string, email string, password string) (string, bool) {
 	hashedPassword, err := security.HashPassword(password)
 	if err != nil {
-		return false
+		return "", false
 	}
 
 	newUUID := uuid.New().String()
@@ -53,10 +55,46 @@ func Registry(name string, email string, password string) bool {
 		Password: hashedPassword,
 		Phone:    "",
 		City:     "",
+		Image:    config.Config.Photo.ByteImage,
 	}
 
-	return CreateUser(&user)
+	resizedImage, err := security.ResizeImage(config.Config.Photo.ByteImage)
+
+	if err != nil {
+		return "", false
+	}
+
+	encodedImage := base64.StdEncoding.EncodeToString([]byte(resizedImage))
+	userToken := security.UserToken{
+		ID:    user.UUID,
+		Name:  user.Name,
+		Email: user.Email,
+		Image: encodedImage,
+	}
+
+	token, err := security.GenerateJWT(userToken)
+	if err != nil {
+		return "", false
+	}
+
+	return token, CreateUser(&user)
 }
+
+/*
+func CreatePhoto(db *gorm.DB, name string, data []byte) {
+	photo := Photo{Name: name, Data: data}
+	result := db.Create(&photo)
+	if result.Error != nil {
+		log.Println("Error creating photo:", result.Error)
+	}
+}
+
+func GetPhoto(db *gorm.DB, id uint) Photo {
+	var photo Photo
+	db.First(&photo, id)
+	return photo
+}
+*/
 
 func GetUser(uuid string) User {
 	var user User

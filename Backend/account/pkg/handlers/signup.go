@@ -7,21 +7,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RegistryForm struct {
+type SignupForm struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func Registry(c *gin.Context) {
-	var newRegistryForm RegistryForm
-	if err := c.BindJSON(&newRegistryForm); err != nil {
+func Signup(c *gin.Context) {
+	var newSignupForm SignupForm
+	if err := c.BindJSON(&newSignupForm); err != nil {
 		return
 	}
 
-	registered := postgres.Registry(newRegistryForm.Name, newRegistryForm.Email, newRegistryForm.Password)
+	token, registered := postgres.Registry(newSignupForm.Name, newSignupForm.Email, newSignupForm.Password)
+
 	if registered {
-		c.JSON(http.StatusOK, gin.H{})
+		c.JSON(http.StatusOK, gin.H{
+			"token": token,
+		})
 	} else {
 		c.JSON(http.StatusInternalServerError, gin.H{})
 	}

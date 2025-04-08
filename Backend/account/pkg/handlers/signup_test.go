@@ -13,11 +13,11 @@ import (
 // TODO: написать тесты для "registry"
 // TODO: coverage ~ 80%
 // TODO: test database?
-func TestRegistry(t *testing.T) {
+func TestSignup(t *testing.T) {
 	r := router.SetupRouter(false)
-	r.POST("/"+config.Config.Prefix+"/registry", Registry)
+	r.POST("/"+config.Config.Prefix+"/signup", Signup)
 
-	req, _ := http.NewRequest("POST", config.Config.Prefix+"/registry", nil)
+	req, _ := http.NewRequest("POST", config.Config.Prefix+"/signup", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
