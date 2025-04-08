@@ -1,17 +1,27 @@
-package handlers
+package security
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/security"
 	"github.com/gin-gonic/gin"
 )
 
+// AuthMiddleware проверяет наличие и валидность JWT в заголовке Authorization
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := c.Request.Header.Get("Authorization")
-		if tokenString == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is missing"})
+		// Получаем токен из заголовка Authorization
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+			c.Abort()
+			return
+		}
+
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		if tokenString == authHeader { // Если токен не был найден
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
 		}
@@ -23,6 +33,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// Если токен валиден, продолжаем обработку запроса
 		c.Next()
 	}
 }

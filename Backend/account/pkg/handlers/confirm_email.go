@@ -8,16 +8,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ConfirmEmail(c *gin.Context, caching caching.CachingInterface) {
+func ConfirmEmail(c *gin.Context, cache caching.CachingInterface) {
 	fullURLWithParams := c.Request.URL.String()
 	splitedURL := strings.Split(fullURLWithParams, "/")
 	confirmationLink := splitedURL[len(splitedURL)-1]
 
-	username := caching.GetCacheConfirmationLink(confirmationLink)
+	username := cache.GetCacheConfirmationLink(confirmationLink)
 	if username == "" {
 		c.JSON(http.StatusNotFound, gin.H{})
 	} else {
-		caching.DeleteCacheConfirmationLink(confirmationLink)
+		cache.DeleteCacheConfirmationLink(confirmationLink)
 		c.JSON(http.StatusOK, gin.H{})
 	}
 }

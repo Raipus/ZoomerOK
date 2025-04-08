@@ -20,7 +20,9 @@ func run_http_server() {
 	router.POST(config.Config.Prefix+"/signup", handlers.Signup)
 	router.POST(config.Config.Prefix+"/login", handlers.Login)
 	// router.PUT(config.Config.Prefix+"/change_password", handlers.ChangePassword)
-	router.GET(config.Config.Prefix+"/confirm_email/:confirmation_link", handlers.ConfirmEmail)
+	router.GET(config.Config.Prefix+"/confirm_email/:confirmation_link", func(c *gin.Context) {
+		handlers.ConfirmEmail(c, caching.ProductionCachingInterface)
+	})
 	router.GET(config.Config.Prefix+"/confirm_password/:reset_link", func(c *gin.Context) {
 		handlers.ConfirmPassword(c, caching.ProductionCachingInterface)
 	})
