@@ -9,7 +9,7 @@ import (
 )
 
 type UserToken struct {
-	ID             string `json:"id"`
+	Id             int    `json:"id"`
 	Name           string `json:"name"`
 	Email          string `json:"email"`
 	ConfirmedEmail bool   `json:"confirmed_email"`
@@ -22,7 +22,7 @@ func GenerateJWT(user UserToken) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
-	claims["id"] = user.ID
+	claims["id"] = user.Id
 	claims["name"] = user.Name
 	claims["email"] = user.Email
 	claims["confirmed_email"] = user.ConfirmedEmail

@@ -6,7 +6,6 @@ import (
 
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
 	"github.com/Raipus/ZoomerOK/account/pkg/security"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -38,9 +37,7 @@ func Signup(name string, email string, password string) (string, bool) {
 		return "", false
 	}
 
-	newUUID := uuid.New().String()
 	user := User{
-		UUID:     newUUID,
 		Name:     name,
 		Email:    email,
 		Password: hashedPassword,
@@ -57,7 +54,7 @@ func Signup(name string, email string, password string) (string, bool) {
 
 	encodedImage := base64.StdEncoding.EncodeToString([]byte(resizedImage))
 	userToken := security.UserToken{
-		ID:    user.UUID,
+		Id:    user.Id,
 		Name:  user.Name,
 		Email: user.Email,
 		Image: encodedImage,

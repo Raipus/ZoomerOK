@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ConfirmEmail(c *gin.Context) {
+func ConfirmEmail(c *gin.Context, caching caching.CachingInterface) {
 	fullURLWithParams := c.Request.URL.String()
 	splitedURL := strings.Split(fullURLWithParams, "/")
 	confirmationLink := splitedURL[len(splitedURL)-1]

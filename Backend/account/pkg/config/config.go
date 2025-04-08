@@ -19,10 +19,10 @@ type ConfigType struct {
 	HttpPort            int    `mapstructure:"HTTP_PORT"`
 	Prefix              string `mapstructure:"PREFIX"`
 	SecretKey           string `mapstructure:"SECRET_KEY"`
-	TimeCache           uint   `mapstructure:"TIME_CACHE"`
+	TimeCache           int    `mapstructure:"TIME_CACHE"`
 	ConfirmationCache   string `mapstructure:"CONFIRMATION_CACHE"`
 	ResetCache          string `mapstructure:"RESET_CACHE"`
-	GenerateLinkLength  string `mapstructure:"GENERATE_LINK_LENGTH"`
+	GenerateLinkLength  int    `mapstructure:"GENERATE_LINK_LENGTH"`
 	GenerateLinkCharset string `mapstructure:"GENERATE_LINK_CHARSET"`
 	Photo               PhotoConfig
 }

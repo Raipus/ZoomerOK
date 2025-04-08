@@ -2,12 +2,9 @@ package security
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
-	"net/smtp"
 	"time"
 
-	"github.com/Raipus/ZoomerOK/account/pkg/caching"
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
 )
 
@@ -21,7 +18,7 @@ func SendConfirmEmail(username, confirmationLink string) []byte {
 			"ZoomerOk",
 		username, confirmationLink,
 	))
-	caching.SetCacheConfirmationLink(username, confirmationLink)
+	// ProductionCachingInterface.SetCacheConfirmationLink(username, confirmationLink)
 	return confirmEmailMessage
 }
 
@@ -35,7 +32,7 @@ func SendChangePassword(username, resetLink string) []byte {
 			"ZoomerOk",
 		username, resetLink,
 	))
-	caching.SetCacheResetLink(username, resetLink)
+	// caching.SetCacheResetLink(username, resetLink)
 	return changePasswordMessage
 }
 
@@ -49,6 +46,7 @@ func GenerateLink() string {
 	return string(b)
 }
 
+/*
 func sendEmail(message string) error {
 	err := smtp.SendMail(smtpHost+":"+smtpPort, nil)
 
@@ -58,4 +56,4 @@ func sendEmail(message string) error {
 
 	log.Println("Сообщение успешно отправлено!")
 	return nil
-}
+}*/

@@ -8,7 +8,7 @@ import (
 
 type User struct {
 	gorm.Model
-	UUID           string     `gorm:"type:uuid;default:uuid_generate_v4();unique;not null"`
+	Id             int        `gorm:"type:id;primaryKey;not null"`
 	Name           string     `gorm:"not null;size:30"`
 	Email          string     `gorm:"not null;size:30;unique"`
 	ConfirmedEmail bool       `gorm:"default:false"`
@@ -20,11 +20,11 @@ type User struct {
 }
 
 type Friend struct {
-	UUID      string `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	User1UUID string `gorm:"not null;index;type:uuid"`
-	User2UUID string `gorm:"not null;index;type:uuid"`
-	Accepted  bool   `gorm:"not null"`
+	Id       string `gorm:"type:id;primaryKey"`
+	User1Id  int    `gorm:"not null;index;type:id"`
+	User2Id  int    `gorm:"not null;index;type:id"`
+	Accepted bool   `gorm:"not null"`
 
-	User1 *User `gorm:"foreignKey:User1UUID;references:UUID"`
-	User2 *User `gorm:"foreignKey:User2UUID;references:UUID"`
+	User1 *User `gorm:"foreignKey:User1Id;references:Id"`
+	User2 *User `gorm:"foreignKey:User2Id;references:Id"`
 }

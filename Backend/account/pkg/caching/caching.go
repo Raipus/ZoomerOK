@@ -7,43 +7,72 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-func initCache() {
-	c := cache.New(config.Config.TimeCache*time.Second, config.Config.TimeCache*time.Second)
-	return c
+// CachingInterface определяет методы для кэширования
+type CachingInterface interface {
+	SetCacheResetLink(username, resetLink string)
+	SetCacheConfirmationLink(username, confirmationLink string)
+	GetCacheResetLink(resetLink string) string
+	GetCacheConfirmationLink(confirmationLink string) string
+	DeleteCacheResetLink(resetLink string)
+	DeleteCacheConfirmationLink(confirmationLink string)
 }
 
-var c *cache.Cache = initCache()
+// ProductionCachingInterface - экземпляр для использования в производстве
+var ProductionCachingInterface CachingInterface = &RealCache{cache: initCache()}
 
-func SetCacheResetLink(username, resetLink string) {
-	c.Set(config.Config.ResetCache+"_"+resetLink, username, cache.DefaultExpiration)
+// RealCache - реальная реализация кэша с использованием go-cache
+type RealCache struct {
+	cache *cache.Cache
 }
 
-func SetCacheConfirmationLink(username, confirmationLink string) {
-	c.Set(config.Config.ConfirmationCache+"_"+confirmationLink, username, cache.DefaultExpiration)
+// initCache - инициализация кэша
+func initCache() *cache.Cache {
+	return cache.New(time.Duration(config.Config.TimeCache)*time.Second, time.Duration(config.Config.TimeCache)*time.Second)
 }
 
-func GetCacheResetLink(resetLink string) string {
-	resetLink, found := c.Get(config.Config.ConfirmationCache + "_" + resetLink)
-	if found {
-		return resetLink
+// Реализация методов интерфейса CachingInterface
+func (r *RealCache) SetCacheResetLink(username, resetLink string) {
+	key := config.Config.ResetCache + "_" + resetLink
+	r.cache.Set(key, username, cache.DefaultExpiration)
+}
+
+func (r *RealCache) SetCacheConfirmationLink(username, confirmationLink string) {
+	key := config.Config.ConfirmationCache + "_" + confirmationLink
+	r.cache.Set(key, username, cache.DefaultExpiration)
+}
+
+func (r *RealCache) GetCacheResetLink(resetLink string) string {
+	key := config.Config.ResetCache + "_" + resetLink
+	value, found := r.cache.Get(key)
+	if !found {
+		return ""
 	}
-
-	return ""
-}
-
-func GetCacheConfirmationLink(confirmationLink string) string {
-	confirmationLink, found := c.Get(config.Config.ConfirmationCache + "_" + confirmationLink)
-	if found {
-		return confirmationLink
+	strResetLink, ok := value.(string)
+	if !ok {
+		return ""
 	}
-
-	return ""
+	return strResetLink
 }
 
-func DeleteCacheResetLink(resetLink string) {
-	c.Delete(config.Config.ResetCache + "_" + resetLink)
+func (r *RealCache) GetCacheConfirmationLink(confirmationLink string) string {
+	key := config.Config.ConfirmationCache + "_" + confirmationLink
+	value, found := r.cache.Get(key)
+	if !found {
+		return ""
+	}
+	strConfirmationLink, ok := value.(string)
+	if !ok {
+		return ""
+	}
+	return strConfirmationLink
 }
 
-func DeleteCacheConfirmationLink(confirmationLink string) {
-	c.Delete(config.Config.ConfirmationCache + "_" + confirmationLink)
+func (r *RealCache) DeleteCacheResetLink(resetLink string) {
+	key := config.Config.ResetCache + "_" + resetLink
+	r.cache.Delete(key)
+}
+
+func (r *RealCache) DeleteCacheConfirmationLink(confirmationLink string) {
+	key := config.Config.ConfirmationCache + "_" + confirmationLink
+	r.cache.Delete(key)
 }

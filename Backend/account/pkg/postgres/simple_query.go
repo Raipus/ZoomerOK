@@ -25,9 +25,9 @@ func GetPhoto(db *gorm.DB, id uint) Photo {
 }
 */
 
-func GetUserByUUID(uuid string) User {
+func GetUserByUUID(id int) User {
 	var user User
-	Instance.Model(&User{UUID: uuid}).First(&user)
+	Instance.Model(&User{Id: id}).First(&user)
 	return user
 }
 
@@ -37,22 +37,22 @@ func GetUserByEmail(email string) User {
 	return user
 }
 
-func DeleteUser(uuid string) {
+func DeleteUser(id int) {
 	var user User
-	Instance.Where(&User{UUID: uuid}).Find(&user)
+	Instance.Where(&User{Id: id}).Find(&user)
 	Instance.Delete(&user)
 }
 
-func AcceptFriendRequest(uuid1 string, uuid2 string) {
+func AcceptFriendRequest(id1 int, id2 int) {
 	var friend Friend
-	Instance.Where(&Friend{User1UUID: uuid1, User2UUID: uuid2}).Find(&friend)
+	Instance.Where(&Friend{User1Id: id1, User2Id: id2}).Find(&friend)
 	friend.Accepted = true
 	Instance.Save(&friend)
 }
 
-func DeleteFriendRequest(uuid1 string, uuid2 string) {
+func DeleteFriendRequest(id1 int, id2 int) {
 	var friend Friend
-	Instance.Where(&Friend{User1UUID: uuid1, User2UUID: uuid2}).Find(&friend)
+	Instance.Where(&Friend{User1Id: id1, User2Id: id2}).Find(&friend)
 	Instance.Delete(&friend)
 }
 
