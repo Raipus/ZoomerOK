@@ -17,6 +17,8 @@ func run_http_server() {
 	router := router.SetupRouter(true)
 	router.POST(config.Config.Prefix+"/signup", handlers.Signup)
 	router.POST(config.Config.Prefix+"/login", handlers.Login)
+	router.GET(config.Config.Prefix+"/confirm_email/:url", handlers.ConfirmEmail)
+	router.GET(config.Config.Prefix+"/confirm_password/:url", handlers.ConfirmPassword)
 	router.Run(http_server)
 }
 

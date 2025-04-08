@@ -15,15 +15,15 @@ func initCache() {
 var c *cache.Cache = initCache()
 
 func SetCacheResetLink(username, resetLink string) {
-	c.Set(config.Config.ResetCache+"_"+username, resetLink, cache.DefaultExpiration)
+	c.Set(config.Config.ResetCache+"_"+resetLink, username, cache.DefaultExpiration)
 }
 
 func SetCacheConfirmationLink(username, confirmationLink string) {
-	c.Set(config.Config.ConfirmationCache+"_"+username, confirmationLink, cache.DefaultExpiration)
+	c.Set(config.Config.ConfirmationCache+"_"+confirmationLink, username, cache.DefaultExpiration)
 }
 
-func GetCacheResetLink(username string) string {
-	resetLink, found := c.Get(config.Config.ConfirmationCache + "_" + username)
+func GetCacheResetLink(resetLink string) string {
+	resetLink, found := c.Get(config.Config.ConfirmationCache + "_" + resetLink)
 	if found {
 		return resetLink
 	}
@@ -31,11 +31,19 @@ func GetCacheResetLink(username string) string {
 	return ""
 }
 
-func GetCacheConfirmationLink(username string) string {
-	confirmationLink, found := c.Get(config.Config.ConfirmationCache + "_" + username)
+func GetCacheConfirmationLink(confirmationLink string) string {
+	confirmationLink, found := c.Get(config.Config.ConfirmationCache + "_" + confirmationLink)
 	if found {
 		return confirmationLink
 	}
 
 	return ""
+}
+
+func DeleteCacheResetLink(resetLink string) {
+	c.Delete(config.Config.ResetCache + "_" + resetLink)
+}
+
+func DeleteCacheConfirmationLink(confirmationLink string) {
+	c.Delete(config.Config.ConfirmationCache + "_" + confirmationLink)
 }
