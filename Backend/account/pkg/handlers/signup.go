@@ -13,13 +13,13 @@ type SignupForm struct {
 	Password string `json:"password"`
 }
 
-func Signup(c *gin.Context) {
+func Signup(c *gin.Context, db postgres.PostgresInterface) {
 	var newSignupForm SignupForm
 	if err := c.BindJSON(&newSignupForm); err != nil {
 		return
 	}
 
-	token, registered := postgres.Signup(newSignupForm.Name, newSignupForm.Email, newSignupForm.Password)
+	token, registered := db.Signup(newSignupForm.Name, newSignupForm.Email, newSignupForm.Password)
 
 	if registered {
 		c.JSON(http.StatusOK, gin.H{

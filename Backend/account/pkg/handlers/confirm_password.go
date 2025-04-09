@@ -19,5 +19,4 @@ func ConfirmPassword(c *gin.Context, cache caching.CachingInterface) {
 		cache.DeleteCacheResetLink(resetLink)
 		c.JSON(http.StatusOK, gin.H{"message": "Password confirmed"})
 	}
-	return
 }

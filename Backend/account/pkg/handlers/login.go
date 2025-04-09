@@ -12,13 +12,13 @@ type LoginForm struct {
 	Password string `json:"password"`
 }
 
-func Login(c *gin.Context) {
+func Login(c *gin.Context, db postgres.PostgresInterface) {
 	var newLoginForm LoginForm
 	if err := c.BindJSON(&newLoginForm); err != nil {
 		return
 	}
 
-	logined, error := postgres.Login(newLoginForm.Email, newLoginForm.Password)
+	logined, error := db.Login(newLoginForm.Email, newLoginForm.Password)
 	if !logined {
 		if error == "Ошибка сервера" {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": error})

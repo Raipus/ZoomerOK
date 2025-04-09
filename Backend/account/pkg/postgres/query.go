@@ -10,9 +10,9 @@ import (
 )
 
 // TODO: написать валидацию данных
-func Login(email string, password string) (bool, string) {
+func (Instance *RealPostgres) Login(email string, password string) (bool, string) {
 	var user User
-	result := Instance.Where(&User{Email: email}).First(&user)
+	result := Instance.instance.Where(&User{Email: email}).First(&user)
 
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
@@ -31,7 +31,7 @@ func Login(email string, password string) (bool, string) {
 }
 
 // TODO: написать валидацию данных
-func Signup(name string, email string, password string) (string, bool) {
+func (Instance *RealPostgres) Signup(name string, email string, password string) (string, bool) {
 	hashedPassword, err := security.HashPassword(password)
 	if err != nil {
 		return "", false
@@ -65,10 +65,14 @@ func Signup(name string, email string, password string) (string, bool) {
 		return "", false
 	}
 
-	return token, CreateUser(&user)
+	return token, Instance.CreateUser(&user)
 }
 
 // TODO: написать валидацию данных
-func ChangePassword(email string, password string) {
-
+func (Instance *RealPostgres) ChangePassword(user *User, newPassword string) error {
+	hashedPassword, err := security.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+	return Instance.UpdateUserPassword(user, hashedPassword)
 }

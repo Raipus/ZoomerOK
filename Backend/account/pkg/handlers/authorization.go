@@ -8,10 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AuthMiddleware проверяет наличие и валидность JWT в заголовке Authorization
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Получаем токен из заголовка Authorization
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
@@ -20,7 +18,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		if tokenString == authHeader { // Если токен не был найден
+		if tokenString == authHeader {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
@@ -33,7 +31,6 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Если токен валиден, продолжаем обработку запроса
 		c.Next()
 	}
 }

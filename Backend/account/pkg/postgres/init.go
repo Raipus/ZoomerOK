@@ -53,3 +53,14 @@ func Migrate() {
 	}
 	log.Println("Database Migration Completed!")
 }
+
+func initPostgres() *gorm.DB {
+	Init()
+	Migrate()
+
+	if Instance != nil {
+		panic("Database not initialized")
+	} else {
+		return Instance
+	}
+}

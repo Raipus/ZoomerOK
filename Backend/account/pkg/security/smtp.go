@@ -8,6 +8,14 @@ import (
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
 )
 
+/*
+type SMTPInterface interface {
+SendChangePassword(username, resetLink string) []byte
+SendChangePassword(username, resetLink string) []byte
+}
+
+var ProductionSMTPInterface SMTPInterface = &RealSMTP{}*/
+
 func SendConfirmEmail(username, confirmationLink string) []byte {
 	confirmEmailMessage := []byte(fmt.Sprintf(
 		"Здравствуйте, %s!\n\n"+

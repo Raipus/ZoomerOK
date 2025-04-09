@@ -19,5 +19,4 @@ func ConfirmEmail(c *gin.Context, cache caching.CachingInterface) {
 		cache.DeleteCacheConfirmationLink(confirmationLink)
 		c.JSON(http.StatusOK, gin.H{})
 	}
-	return
 }
