@@ -32,6 +32,10 @@ func GenerateJWT(user UserToken) (string, error) {
 	return token.SignedString(secretKey)
 }
 
+func JWTToString(token *jwt.Token) (string, error) {
+	return token.SignedString([]byte(config.Config.SecretKey))
+}
+
 func ValidateJWT(tokenString string) (*jwt.Token, error) {
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
