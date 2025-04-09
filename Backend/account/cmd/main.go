@@ -8,6 +8,7 @@ import (
 	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
+	"github.com/Raipus/ZoomerOK/account/pkg/security"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,8 +18,9 @@ var (
 
 func run_http_server() {
 	router := router.SetupRouter(true)
+	mockSmtp := new(security.MockSmtp)
 	router.POST(config.Config.Prefix+"/signup", func(c *gin.Context) {
-		handlers.Signup(c, postgres.ProductionPostgresInterface)
+		handlers.Signup(c, postgres.ProductionPostgresInterface, mockSmtp, caching.ProductionCachingInterface)
 	})
 	router.POST(config.Config.Prefix+"/login", func(c *gin.Context) {
 		handlers.Login(c, postgres.ProductionPostgresInterface)
@@ -35,5 +37,6 @@ func run_http_server() {
 
 // TODO: linter
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 	run_http_server()
 }

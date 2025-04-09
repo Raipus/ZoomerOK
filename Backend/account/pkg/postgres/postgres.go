@@ -13,7 +13,6 @@ type PostgresInterface interface {
 	DeleteUser(id int)
 	AcceptFriendRequest(id1 int, id2 int)
 	DeleteFriendRequest(id1 int, id2 int)
-	UUIDExists(uuid string) bool
 }
 
 var ProductionPostgresInterface PostgresInterface = &RealPostgres{instance: initPostgres()}

@@ -64,12 +64,3 @@ func (Instance *RealPostgres) DeleteFriendRequest(id1 int, id2 int) {
 	Instance.instance.Where(&Friend{User1Id: id1, User2Id: id2}).Find(&friend)
 	Instance.instance.Delete(&friend)
 }
-
-func (Instance *RealPostgres) UUIDExists(uuid string) bool {
-	var exists bool
-	err := Instance.instance.Model(&User{}).Where("UUID = ?", uuid).Find(&exists)
-	if err != nil {
-		return false
-	}
-	return exists
-}

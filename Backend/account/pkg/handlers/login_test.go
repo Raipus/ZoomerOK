@@ -6,7 +6,9 @@ import (
 	"testing"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
+	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,8 +16,12 @@ import (
 // TODO: coverage ~ 80%
 // TODO: test database?
 func TestLogin(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
-	r.POST(config.Config.Prefix+"/login", Login)
+	mockPostgres := new(postgres.MockPostgres)
+	r.POST(config.Config.Prefix+"/login", func(c *gin.Context) {
+		Login(c, mockPostgres)
+	})
 
 	req, _ := http.NewRequest("POST", config.Config.Prefix+"/login", nil)
 	w := httptest.NewRecorder()

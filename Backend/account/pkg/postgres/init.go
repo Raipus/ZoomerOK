@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -55,12 +56,16 @@ func Migrate() {
 }
 
 func initPostgres() *gorm.DB {
-	Init()
-	Migrate()
+	if gin.Mode() == gin.ReleaseMode {
+		Init()
+		Migrate()
 
-	if Instance != nil {
-		panic("Database not initialized")
+		if Instance != nil {
+			panic("Database not initialized")
+		} else {
+			return Instance
+		}
 	} else {
-		return Instance
+		return nil
 	}
 }

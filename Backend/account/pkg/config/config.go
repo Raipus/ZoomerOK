@@ -25,6 +25,11 @@ type ConfigType struct {
 	GenerateLinkLength  int    `mapstructure:"GENERATE_LINK_LENGTH"`
 	GenerateLinkCharset string `mapstructure:"GENERATE_LINK_CHARSET"`
 	Photo               PhotoConfig
+
+	SmtpUsername string `mapstructure:"SMTP_USERNAME"`
+	SmtpPassword string `mapstructure:"SMTP_PASSWORD"`
+	SmtpHost     string `mapstructure:"SMTP_HOST"`
+	SmtpPort     string `mapstructure:"SMTP_PORT"`
 }
 
 type PhotoConfig struct {
