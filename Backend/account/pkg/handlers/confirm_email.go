@@ -1,23 +1,23 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
 	"github.com/gin-gonic/gin"
 )
 
 func ConfirmEmail(c *gin.Context, cache caching.CachingInterface) {
-	fullURLWithParams := c.Request.URL.String()
-	splitedURL := strings.Split(fullURLWithParams, "/")
-	confirmationLink := splitedURL[len(splitedURL)-1]
+	confirmationLink := c.Param("confirmation_link")
 
 	username := cache.GetCacheConfirmationLink(confirmationLink)
+	fmt.Println("asfd", username)
 	if username == "" {
-		c.JSON(http.StatusNotFound, gin.H{})
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 	} else {
 		cache.DeleteCacheConfirmationLink(confirmationLink)
 		c.JSON(http.StatusOK, gin.H{})
 	}
+	return
 }

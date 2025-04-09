@@ -6,7 +6,6 @@ import (
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
 	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
-	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/gin-gonic/gin"
 )

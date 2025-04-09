@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConfirmEmail(t *testing.T) {
+func TestConfirmEmailWithUsername(t *testing.T) {
 	// Устанавливаем режим тестирования для Gin
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
@@ -20,19 +20,19 @@ func TestConfirmEmail(t *testing.T) {
 
 	// Настраиваем тестовые данные
 	confirmationLink := "someResetLink"
-	username := "user1"
+	username := "user2"
 
 	// Тест для случая, когда username найден
 	mockCache.On("GetCacheConfirmationLink", confirmationLink).Return(username)
 	mockCache.On("DeleteCacheConfirmationLink", confirmationLink).Return()
 
 	// Регистрируем обработчик с использованием mockCache
-	router.GET("/confirm/:confirmation_link", func(c *gin.Context) {
+	router.GET("/confirm_email/:confirmation_link", func(c *gin.Context) {
 		ConfirmEmail(c, mockCache)
 	})
 
 	// Создаем тестовый запрос
-	req, _ := http.NewRequest(http.MethodGet, "/confirm/"+confirmationLink, nil)
+	req, _ := http.NewRequest(http.MethodGet, "/confirm_email/"+confirmationLink, nil)
 	w := httptest.NewRecorder()
 
 	// Выполняем запрос
@@ -44,11 +44,32 @@ func TestConfirmEmail(t *testing.T) {
 	// Проверяем, что ожидания выполнены
 	mockCache.AssertExpectations(t)
 
+}
+
+func TestConfirmEmailWithoutUsername(t *testing.T) {
+	// Устанавливаем режим тестирования для Gin
+	gin.SetMode(gin.TestMode)
+	router := gin.Default()
+
+	// Создаем mock для кэширования
+	mockCache := new(caching.MockCache)
+
+	// Настраиваем тестовые данные
+	confirmationLink := "someResetLink"
+
 	// Тест для случая, когда username не найден
 	mockCache.On("GetCacheConfirmationLink", confirmationLink).Return("")
 
+	// Регистрируем обработчик с использованием mockCache
+	router.GET("/confirm_email/:confirmation_link", func(c *gin.Context) {
+		ConfirmEmail(c, mockCache)
+	})
+
+	// Создаем тестовый запрос
+	req, _ := http.NewRequest(http.MethodGet, "/confirm_email/"+confirmationLink, nil)
+
 	// Выполняем запрос снова
-	w = httptest.NewRecorder()
+	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	// Проверяем статус-код для случая отсутствия username
@@ -56,4 +77,5 @@ func TestConfirmEmail(t *testing.T) {
 
 	// Проверяем, что ожидания выполнены
 	mockCache.AssertExpectations(t)
+	mockCache.AssertCalled(t, "GetCacheConfirmationLink", confirmationLink)
 }

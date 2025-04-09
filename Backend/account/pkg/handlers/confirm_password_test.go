@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConfirmPassword(t *testing.T) {
+func TestConfirmPasswordWithUsername(t *testing.T) {
 	// Устанавливаем режим тестирования для Gin
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
@@ -27,12 +27,12 @@ func TestConfirmPassword(t *testing.T) {
 	mockCache.On("DeleteCacheResetLink", resetLink).Return()
 
 	// Регистрируем обработчик с использованием mockCache
-	router.GET("/confirm/:reset_link", func(c *gin.Context) {
+	router.GET("/confirm_password/:reset_link", func(c *gin.Context) {
 		ConfirmPassword(c, mockCache)
 	})
 
 	// Создаем тестовый запрос
-	req, _ := http.NewRequest(http.MethodGet, "/confirm/"+resetLink, nil)
+	req, _ := http.NewRequest(http.MethodGet, "/confirm_password/"+resetLink, nil)
 	w := httptest.NewRecorder()
 
 	// Выполняем запрос
@@ -43,12 +43,32 @@ func TestConfirmPassword(t *testing.T) {
 
 	// Проверяем, что ожидания выполнены
 	mockCache.AssertExpectations(t)
+}
+
+func TestConfirmPasswordWithoutUsername(t *testing.T) {
+	// Устанавливаем режим тестирования для Gin
+	gin.SetMode(gin.TestMode)
+	router := gin.Default()
+
+	// Создаем mock для кэширования
+	mockCache := new(caching.MockCache)
+
+	// Настраиваем тестовые данные
+	resetLink := "someResetLink"
 
 	// Тест для случая, когда username не найден
 	mockCache.On("GetCacheResetLink", resetLink).Return("")
 
+	// Регистрируем обработчик с использованием mockCache
+	router.GET("/confirm_password/:reset_link", func(c *gin.Context) {
+		ConfirmPassword(c, mockCache)
+	})
+
+	// Создаем тестовый запрос
+	req, _ := http.NewRequest(http.MethodGet, "/confirm_password/"+resetLink, nil)
+
 	// Выполняем запрос снова
-	w = httptest.NewRecorder()
+	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	// Проверяем статус-код для случая отсутствия username
@@ -56,4 +76,5 @@ func TestConfirmPassword(t *testing.T) {
 
 	// Проверяем, что ожидания выполнены
 	mockCache.AssertExpectations(t)
+	mockCache.AssertCalled(t, "GetCacheResetLink", resetLink)
 }

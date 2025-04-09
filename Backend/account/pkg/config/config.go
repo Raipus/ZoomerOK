@@ -28,7 +28,7 @@ type ConfigType struct {
 }
 
 type PhotoConfig struct {
-	ImagePath     string `mapstructure:"IMAGE_PATH"`
+	ImagePathProd string `mapstructure:"IMAGE_PATH_PROD"`
 	ImagePathTest string `mapstructure:"IMAGE_PATH_TEST"`
 	Default       string `mapstructure:"DEFAULT"`
 	Image         string
@@ -85,11 +85,12 @@ func LoadConfig() (c *ConfigType) {
 
 	c.Photo.Large = viper.GetUint("large")
 	c.Photo.Small = viper.GetUint("small")
-	c.Photo.ImagePath = viper.GetString("image_path")
+	c.Photo.ImagePathProd = viper.GetString("image_path_prod")
+	c.Photo.ImagePathTest = viper.GetString("image_path_test")
 	c.Photo.Default = viper.GetString("default")
 
 	if !strings.HasSuffix(os.Args[0], ".test") {
-		c.Photo.Image = c.Photo.ImagePath + "/" + c.Photo.Default
+		c.Photo.Image = c.Photo.ImagePathProd + "/" + c.Photo.Default
 	} else {
 		c.Photo.Image = c.Photo.ImagePathTest + "/" + c.Photo.Default
 	}
