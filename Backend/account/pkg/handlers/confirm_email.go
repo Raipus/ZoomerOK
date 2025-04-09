@@ -5,10 +5,11 @@ import (
 	"net/http"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
+	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/gin-gonic/gin"
 )
 
-func ConfirmEmail(c *gin.Context, cache caching.CachingInterface) {
+func ConfirmEmail(c *gin.Context, db postgres.PostgresInterface, cache caching.CachingInterface) {
 	confirmationLink := c.Param("confirmation_link")
 
 	username := cache.GetCacheConfirmationLink(confirmationLink)

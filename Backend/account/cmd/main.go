@@ -25,12 +25,17 @@ func run_http_server() {
 	router.POST(config.Config.Prefix+"/login", func(c *gin.Context) {
 		handlers.Login(c, postgres.ProductionPostgresInterface)
 	})
-	// router.PUT(config.Config.Prefix+"/change_password", handlers.ChangePassword)
 	router.GET(config.Config.Prefix+"/confirm_email/:confirmation_link", func(c *gin.Context) {
 		handlers.ConfirmEmail(c, caching.ProductionCachingInterface)
 	})
 	router.GET(config.Config.Prefix+"/confirm_password/:reset_link", func(c *gin.Context) {
 		handlers.ConfirmPassword(c, caching.ProductionCachingInterface)
+	})
+	router.PUT(config.Config.Prefix+"/change_password/:reset_link", func(c *gin.Context) {
+		handlers.ChangePassword(c, postgres.ProductionPostgresInterface, caching.ProductionCachingInterface)
+	})
+	router.POST(config.Config.Prefix+"/want_change_password", func(c *gin.Context) {
+		handlers.WantChangePassword(c, postgres.ProductionPostgresInterface, mockSmtp, caching.ProductionCachingInterface)
 	})
 	router.Run(http_server)
 }

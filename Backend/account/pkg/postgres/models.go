@@ -19,6 +19,10 @@ type User struct {
 	Image          []byte     `gorm:"type:bytea"` // Хранение изображения в виде бинарных данных
 }
 
+func CompareUsers(user1, user2 User) bool {
+	return user1.Id == user2.Id
+}
+
 type Friend struct {
 	Id       string `gorm:"type:id;primaryKey"`
 	User1Id  int    `gorm:"not null;index;type:id"`

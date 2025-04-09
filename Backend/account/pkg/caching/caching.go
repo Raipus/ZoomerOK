@@ -47,11 +47,11 @@ func (r *RealCache) GetCacheResetLink(resetLink string) string {
 	if !found {
 		return ""
 	}
-	strResetLink, ok := value.(string)
+	username, ok := value.(string)
 	if !ok {
 		return ""
 	}
-	return strResetLink
+	return username
 }
 
 func (r *RealCache) GetCacheConfirmationLink(confirmationLink string) string {
@@ -60,11 +60,11 @@ func (r *RealCache) GetCacheConfirmationLink(confirmationLink string) string {
 	if !found {
 		return ""
 	}
-	strConfirmationLink, ok := value.(string)
+	username, ok := value.(string)
 	if !ok {
 		return ""
 	}
-	return strConfirmationLink
+	return username
 }
 
 func (r *RealCache) DeleteCacheResetLink(resetLink string) {

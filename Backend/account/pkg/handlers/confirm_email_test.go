@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
+	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,6 +19,7 @@ func TestConfirmEmailWithUsername(t *testing.T) {
 	// Создаем mock для кэширования
 	mockCache := new(caching.MockCache)
 
+	mockPostgres := new(postgres.MockPostgres)
 	// Настраиваем тестовые данные
 	confirmationLink := "someResetLink"
 	username := "user2"
@@ -28,7 +30,7 @@ func TestConfirmEmailWithUsername(t *testing.T) {
 
 	// Регистрируем обработчик с использованием mockCache
 	router.GET("/confirm_email/:confirmation_link", func(c *gin.Context) {
-		ConfirmEmail(c, mockCache)
+		ConfirmEmail(c, mockPostgres, mockCache)
 	})
 
 	// Создаем тестовый запрос
@@ -53,6 +55,7 @@ func TestConfirmEmailWithoutUsername(t *testing.T) {
 
 	// Создаем mock для кэширования
 	mockCache := new(caching.MockCache)
+	mockPostgres := new(postgres.MockPostgres)
 
 	// Настраиваем тестовые данные
 	confirmationLink := "someResetLink"
@@ -62,7 +65,7 @@ func TestConfirmEmailWithoutUsername(t *testing.T) {
 
 	// Регистрируем обработчик с использованием mockCache
 	router.GET("/confirm_email/:confirmation_link", func(c *gin.Context) {
-		ConfirmEmail(c, mockCache)
+		ConfirmEmail(c, mockPostgres, mockCache)
 	})
 
 	// Создаем тестовый запрос
