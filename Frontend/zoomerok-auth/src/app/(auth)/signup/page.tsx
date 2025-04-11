@@ -8,6 +8,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 
 interface IFormStateSignIn {
   login: string;
+  email: string;
+  name: string;
   password: string;
   password2: string;
 }
@@ -98,6 +100,18 @@ export default function SignupPage() {
                     placeholder="Логин"
                     type="text"
                     {...register("login", { required: true })}
+                  />
+                  <input
+                    className="rounded-md border-[1px] border-black p-1 text-black bg-white"
+                    placeholder="Почта"
+                    type="email"
+                    {...register("email", { required: true })}
+                  />
+                  <input
+                    className="rounded-md border-[1px] border-black p-1 text-black bg-white"
+                    placeholder="Имя"
+                    type="text"
+                    {...register("name", { required: true })}
                   />
                   <input
                     className="rounded-md border-[1px] border-black p-1 text-black bg-white"

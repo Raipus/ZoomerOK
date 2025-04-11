@@ -7,11 +7,15 @@ import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 interface IFormStateLogin {
+  somelogin: string;
+  email: string;
   login: string;
   password: string;
 }
 
 export default function SigninPage() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const networkUrl = process.env.NEXT_PUBLIC_NETWORK_URL;
   const { register, handleSubmit } = useForm<IFormStateLogin>();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -19,7 +23,14 @@ export default function SigninPage() {
 
   const onSubmit: SubmitHandler<IFormStateLogin> = async (data) => {
     setLoading(true);
-    const response = await fetch("http://localhost:3001/auth/signin", {
+    if (data.somelogin.includes("@")) {
+      const { somelogin, login, ...dataWithEmail } = data;
+      dataWithEmail.email = somelogin;
+    } else {
+      const { somelogin, email, ...dataWithEmail } = data;
+      dataWithEmail.login = somelogin;
+    }
+    const response = await fetch({ apiUrl } + "/auth/signin", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -37,7 +48,7 @@ export default function SigninPage() {
       setCookie("refresh_token", data1.refreshToken, {
         maxAge: 60 * 60 * 24 * 7,
       });
-      router.push("http://localhost:5173/");
+      router.push(networkUrl);
     }
   };
   return (
@@ -88,9 +99,9 @@ export default function SigninPage() {
                   <h1 className="mb-3 justify-self-center text-2xl">Вход</h1>
                   <input
                     className="rounded-md border-[1px] border-black p-1 text-black bg-white"
-                    placeholder="Логин"
+                    placeholder="Логин / Почта"
                     type="text"
-                    {...register("login", { required: true })}
+                    {...register("somelogin", { required: true })}
                   />
                   <input
                     className="rounded-md border-[1px] border-black p-1 text-black bg-white"
@@ -107,12 +118,10 @@ export default function SigninPage() {
                 </form>
               </div>
               <div className="mt-3 grid justify-items-center hover:scale-102 duration-300">
-                <Link href="http://localhost:3000/signup">
-                  Еще нет аккаунта?
-                </Link>
+                <Link href="/signup">Еще нет аккаунта?</Link>
               </div>
               <div className="mt-3 grid justify-items-center hover:scale-102 duration-300">
-                <Link href="http://localhost:3000/signin">Забыли пароль?</Link>
+                <Link href="/signin">Забыли пароль?</Link>
               </div>
             </div>
           </div>
