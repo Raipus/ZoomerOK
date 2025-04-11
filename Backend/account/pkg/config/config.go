@@ -30,6 +30,16 @@ type ConfigType struct {
 	SmtpPassword string `mapstructure:"SMTP_PASSWORD"`
 	SmtpHost     string `mapstructure:"SMTP_HOST"`
 	SmtpPort     string `mapstructure:"SMTP_PORT"`
+
+	KafkaAccountBlogTopic string `mapstructure:"KAFKA_ACCOUNT_BLOG_TOPIC"`
+	KafkaBrokerHost       string `mapstructure:"KAFKA_BROKER_HOST"`
+	KafkaBrokerPort       int    `mapstructure:"KAFKA_BROKER_PORT"`
+	KafkaBrokerUrl        string
+
+	RedisHost     string `mapstructure:"REDIS_HOST"`
+	RedisPort     int    `mapstructure:"REDIS_PORT"`
+	RedisPassword string `mapstructure:"REDIS_PASSWORD"`
+	RedisUrl      string
 }
 
 type PhotoConfig struct {
@@ -76,6 +86,16 @@ func LoadConfig() (c *ConfigType) {
 		fmt.Printf("Ошибка при объединении файла smtp.env: %s\n", err)
 	}
 
+	viper.SetConfigName("kafka")
+	if err := viper.MergeInConfig(); err != nil {
+		fmt.Printf("Ошибка при объединении файла kafka.env: %s\n", err)
+	}
+
+	viper.SetConfigName("redis")
+	if err := viper.MergeInConfig(); err != nil {
+		fmt.Printf("Ошибка при объединении файла redis.env: %s\n", err)
+	}
+
 	c = new(ConfigType)
 
 	if err := viper.Unmarshal(&c); err != nil {
@@ -87,6 +107,9 @@ func LoadConfig() (c *ConfigType) {
 	for key, value := range allSettings {
 		fmt.Printf("%s: %v\n", key, value)
 	}
+
+	c.KafkaBrokerUrl = c.KafkaBrokerHost + ":" + string(c.KafkaBrokerPort)
+	c.RedisUrl = c.RedisHost + ":" + string(c.RedisPort)
 
 	c.Photo.Large = viper.GetUint("large")
 	c.Photo.Small = viper.GetUint("small")

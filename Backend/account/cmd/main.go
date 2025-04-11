@@ -3,9 +3,11 @@ package main
 import (
 	"strconv"
 
+	"github.com/Raipus/ZoomerOK/account/pkg/broker"
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
 	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
+	"github.com/Raipus/ZoomerOK/account/pkg/memory"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/Raipus/ZoomerOK/account/pkg/security"
@@ -26,7 +28,7 @@ func run_http_server() {
 		handlers.Login(c, postgres.ProductionPostgresInterface)
 	})
 	router.GET(config.Config.Prefix+"/confirm_email/:confirmation_link", func(c *gin.Context) {
-		handlers.ConfirmEmail(c, caching.ProductionCachingInterface)
+		handlers.ConfirmEmail(c, postgres.ProductionPostgresInterface, caching.ProductionCachingInterface)
 	})
 	router.GET(config.Config.Prefix+"/confirm_password/:reset_link", func(c *gin.Context) {
 		handlers.ConfirmPassword(c, caching.ProductionCachingInterface)
@@ -43,5 +45,14 @@ func run_http_server() {
 // TODO: linter
 func main() {
 	gin.SetMode(gin.ReleaseMode)
-	run_http_server()
+
+	memory.RedisWaitGroup.Add(1)
+	go memory.ProcessCommands(&memory.RedisWaitGroup, memory.ProductionRedisInterface)
+	memory.RedisWaitGroup.Wait()
+	go broker.ProductionBrokerInterface.Listen()
+	go run_http_server()
+
+	for {
+
+	}
 }
