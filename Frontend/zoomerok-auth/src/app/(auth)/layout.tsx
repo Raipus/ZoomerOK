@@ -8,16 +8,18 @@ import { getTokens } from "@/utils/auth/getTokens";
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [hasTokens, setHasTokens] = useState(true);
-  const networkUrl = process.env.NEXT_PUBLIC_NETWORK_URL;
 
   useEffect(() => {
     async function TokenCheck() {
       let refreshToken = (await getTokens()).refresh;
+      let accessToken = (await getTokens()).access;
       if (!refreshToken) {
         setHasTokens(false);
       } else {
         setHasTokens(true);
-        router.push(networkUrl);
+        router.push(
+          `${process.env.NEXT_PUBLIC_NETWORK_URL}/callback#token=${accessToken}`
+        );
       }
     }
     TokenCheck();

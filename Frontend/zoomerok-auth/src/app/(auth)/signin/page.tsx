@@ -54,7 +54,9 @@ export default function SigninPage() {
         setCookie("refresh_token", data1.refreshToken, {
           maxAge: 60 * 60 * 24 * 7,
         });
-        router.push(process.env.NEXT_PUBLIC_NETWORK_URL);
+        router.push(
+          `${process.env.NEXT_PUBLIC_NETWORK_URL}/callback#token=${data1.accessToken}`
+        );
       }
     } catch (error) {
       showNotification(
