@@ -1,22 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, Roboto_Condensed } from "next/font/google";
+import { Mulish } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const roboto_condensed = Roboto_Condensed({
-  subsets: ["latin"],
-  variable: "--font-roboto-mono",
-  display: "swap",
+const mulish = Mulish({
+  subsets: ["cyrillic", "latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Richard's Studios",
-  description: "Сайт для аренды лучших фотостудий",
+  title: "ZoomerOk",
+  description: "Социальная сеть для настоящих зумеров!",
 };
 
 export default function RootLayout({
@@ -26,11 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body
-        className={`${inter.variable} ${roboto_condensed.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={mulish.className}>{children}</body>
     </html>
   );
 }
