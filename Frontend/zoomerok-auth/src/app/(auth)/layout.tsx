@@ -8,6 +8,7 @@ import { getTokens } from "@/utils/auth/getTokens";
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [hasTokens, setHasTokens] = useState(true);
+  const networkUrl = process.env.NEXT_PUBLIC_NETWORK_URL;
 
   useEffect(() => {
     async function TokenCheck() {
@@ -16,7 +17,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         setHasTokens(false);
       } else {
         setHasTokens(true);
-        router.push("http://localhost:5173/");
+        router.push(networkUrl);
       }
     }
     TokenCheck();

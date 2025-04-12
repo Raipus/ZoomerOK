@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import ErrorNotification from "@/component/ErrorNotification";
+import { useErrorNotification } from "@/hooks/useErrorNotification";
 
 interface IFormStateLogin {
   somelogin: string;
@@ -14,48 +16,59 @@ interface IFormStateLogin {
 }
 
 export default function SigninPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const networkUrl = process.env.NEXT_PUBLIC_NETWORK_URL;
   const { register, handleSubmit } = useForm<IFormStateLogin>();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState();
+  const { error, showError, showNotification, hideNotification } =
+    useErrorNotification();
 
   const onSubmit: SubmitHandler<IFormStateLogin> = async (data) => {
     setLoading(true);
-    if (data.somelogin.includes("@")) {
-      const { somelogin, login, ...dataWithEmail } = data;
-      dataWithEmail.email = somelogin;
-    } else {
-      const { somelogin, email, ...dataWithEmail } = data;
-      dataWithEmail.login = somelogin;
-    }
-    const response = await fetch({ apiUrl } + "/auth/signin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    try {
+      if (data.somelogin.includes("@")) {
+        const { somelogin, login, ...dataWithEmail } = data;
+        dataWithEmail.email = somelogin;
+      } else {
+        const { somelogin, email, ...dataWithEmail } = data;
+        dataWithEmail.login = somelogin;
+      }
 
-    const data1 = await response.json();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
-    if (!response.ok) {
+      const data1 = await response.json();
+
+      if (!response.ok) {
+        showNotification(data1.message || "Произошла ошибка");
+        return;
+      } else {
+        setCookie("access_token", data1.accessToken, { maxAge: 60 * 15 });
+        setCookie("refresh_token", data1.refreshToken, {
+          maxAge: 60 * 60 * 24 * 7,
+        });
+        router.push(process.env.NEXT_PUBLIC_NETWORK_URL);
+      }
+    } catch (error) {
+      showNotification(
+        error instanceof Error ? error.message : "Неизвестная ошибка"
+      );
+    } finally {
       setLoading(false);
-      setError(data1.message);
-    } else {
-      setCookie("access_token", data1.accessToken, { maxAge: 60 * 15 });
-      setCookie("refresh_token", data1.refreshToken, {
-        maxAge: 60 * 60 * 24 * 7,
-      });
-      router.push(networkUrl);
     }
   };
   return (
     <div className="bg-cover">
       <main className="grid justify-items-center">
-        {loading ? (
-          <div>
+        <div className="grid place-items-center h-screen">
+          {loading ? (
             <button
               type="button"
               className="m-[300px] inline-flex items-center"
@@ -82,15 +95,14 @@ export default function SigninPage() {
               </svg>
               <p className="text-2xl">Загрузка...</p>
             </button>
-          </div>
-        ) : (
-          <div className="grid place-items-center h-screen">
-            {error && (
-              <p className="mb-3 mt-3 text-center text-2xl text-red-400">
-                {error}
-              </p>
-            )}
+          ) : (
             <div>
+              <ErrorNotification
+                message={error || ""}
+                show={showError}
+                onClose={hideNotification}
+                duration={5000}
+              />
               <div>
                 <form
                   onSubmit={handleSubmit(onSubmit)}
@@ -121,11 +133,11 @@ export default function SigninPage() {
                 <Link href="/signup">Еще нет аккаунта?</Link>
               </div>
               <div className="mt-3 grid justify-items-center hover:scale-102 duration-300">
-                <Link href="/signin">Забыли пароль?</Link>
+                <Link href="/resetpass">Забыли пароль?</Link>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </main>
     </div>
   );
