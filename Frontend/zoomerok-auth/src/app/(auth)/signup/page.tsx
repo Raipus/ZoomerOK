@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import ErrorNotification from "@/component/ErrorNotification";
+import { useErrorNotification } from "@/hooks/useErrorNotification";
 
 interface IFormStateSignIn {
   login: string;
@@ -18,42 +20,53 @@ export default function SignupPage() {
   const { register, handleSubmit } = useForm<IFormStateSignIn>();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | undefined>(undefined);
+  const { error, showError, showNotification, hideNotification } =
+    useErrorNotification();
 
   const onSubmit: SubmitHandler<IFormStateSignIn> = async (data) => {
     setLoading(true);
-    const { password2, ...dataWithoutPass2 } = data;
-    if (data.password != password2) {
-      setLoading(false);
-      setError("Пароли должны совпадать!");
-    } else {
-      const response = await fetch("http://localhost:3001/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(dataWithoutPass2),
-      });
-
-      const data1 = await response.json();
-
-      if (!response.ok) {
-        setLoading(false);
-        setError(data1.message);
+    try {
+      const { password2, ...dataWithoutPass2 } = data;
+      if (data.password != password2) {
+        showNotification("Пароли должны совпадать!");
       } else {
-        setCookie("access_token", data1.accessToken, { maxAge: 60 * 15 });
-        setCookie("refresh_token", data1.refreshToken, {
-          maxAge: 60 * 60 * 24 * 7,
-        });
-        router.push("http://localhost:5173/");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(dataWithoutPass2),
+          }
+        );
+
+        const data1 = await response.json();
+
+        if (!response.ok) {
+          showNotification(data1.message || "Произошла ошибка");
+          return;
+        } else {
+          setCookie("access_token", data1.accessToken, { maxAge: 60 * 15 });
+          setCookie("refresh_token", data1.refreshToken, {
+            maxAge: 60 * 60 * 24 * 7,
+          });
+          router.push(process.env.NEXT_PUBLIC_NETWORK_URL);
+        }
       }
+    } catch (error) {
+      showNotification(
+        error instanceof Error ? error.message : "Неизвестная ошибка"
+      );
+    } finally {
+      setLoading(false);
     }
   };
   return (
     <div>
       <main className="grid justify-items-center">
-        {loading ? (
-          <div>
+        <div className="grid place-items-center h-screen">
+          {loading ? (
             <button
               type="button"
               className="m-[300px] inline-flex items-center"
@@ -80,15 +93,14 @@ export default function SignupPage() {
               </svg>
               <p className="text-2xl">Загрузка...</p>
             </button>
-          </div>
-        ) : (
-          <div className="grid place-items-center h-screen">
+          ) : (
             <div>
-              {error && (
-                <p className="mb-3 mt-3 text-center text-2xl text-red-400">
-                  {error}
-                </p>
-              )}
+              <ErrorNotification
+                message={error || ""}
+                show={showError}
+                onClose={hideNotification}
+                duration={5000}
+              />
               <div>
                 <form
                   onSubmit={handleSubmit(onSubmit)}
@@ -134,13 +146,11 @@ export default function SignupPage() {
                 </form>
               </div>
               <div className="mt-3 grid justify-items-center hover:scale-102 duration-300">
-                <Link href="http://localhost:3000/signin">
-                  Уже есть аккаунт?
-                </Link>
+                <Link href="/signin">Уже есть аккаунт?</Link>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </main>
     </div>
   );
