@@ -11,9 +11,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     async function TokenCheck() {
-      let refreshToken = (await getTokens()).refresh;
-      let accessToken = (await getTokens()).access;
-      if (!refreshToken) {
+      const accessToken = (await getTokens());
+      if (!accessToken) {
         setHasTokens(false);
       } else {
         setHasTokens(true);

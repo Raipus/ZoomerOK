@@ -1,8 +1,6 @@
 "use client";
 
-import { setCookie } from "cookies-next";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import ErrorNotification from "@/component/ErrorNotification";
@@ -14,7 +12,6 @@ interface IFormStateLogin {
 
 export default function ResetPassPage() {
   const { register, handleSubmit } = useForm<IFormStateLogin>();
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [finished, setFinished] = useState(false);
   const { error, showError, showNotification, hideNotification } =

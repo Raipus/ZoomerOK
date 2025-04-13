@@ -47,10 +47,7 @@ export default function SignupPage() {
           showNotification(data1.message || "Произошла ошибка");
           return;
         } else {
-          setCookie("access_token", data1.accessToken, { maxAge: 60 * 15 });
-          setCookie("refresh_token", data1.refreshToken, {
-            maxAge: 60 * 60 * 24 * 7,
-          });
+          setCookie("access_token", data1.accessToken, { maxAge: 60 * 60 });
           router.push(
             `${process.env.NEXT_PUBLIC_NETWORK_URL}/callback#token=${data1.accessToken}`
           );
