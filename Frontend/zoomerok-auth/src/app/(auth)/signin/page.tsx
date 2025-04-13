@@ -34,7 +34,7 @@ export default function SigninPage() {
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
         {
           method: "POST",
           headers: {
@@ -51,9 +51,7 @@ export default function SigninPage() {
         return;
       } else {
         setCookie("access_token", data1.accessToken, { maxAge: 60 * 60 });
-        router.push(
-          `${process.env.NEXT_PUBLIC_NETWORK_URL}/callback#token=${data1.accessToken}`
-        );
+        router.push(`${process.env.NEXT_PUBLIC_NETWORK_URL}`);
       }
     } catch (error) {
       showNotification(
@@ -132,7 +130,7 @@ export default function SigninPage() {
                 <Link href="/signup">Еще нет аккаунта?</Link>
               </div>
               <div className="mt-3 grid justify-items-center hover:scale-102 duration-300">
-                <Link href="/resetpass">Забыли пароль?</Link>
+                <Link href="/change-password">Забыли пароль?</Link>
               </div>
             </div>
           )}
