@@ -48,9 +48,7 @@ export default function SignupPage() {
           return;
         } else {
           setCookie("access_token", data1.accessToken, { maxAge: 60 * 60 });
-          router.push(
-            `${process.env.NEXT_PUBLIC_NETWORK_URL}/callback#token=${data1.accessToken}`
-          );
+          router.push("/confirm-email");
         }
       }
     } catch (error) {
