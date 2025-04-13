@@ -10,7 +10,7 @@ interface IFormStateLogin {
   email: string;
 }
 
-export default function ResetPassPage() {
+export default function ChangePassPage() {
   const { register, handleSubmit } = useForm<IFormStateLogin>();
   const [loading, setLoading] = useState(false);
   const [finished, setFinished] = useState(false);
