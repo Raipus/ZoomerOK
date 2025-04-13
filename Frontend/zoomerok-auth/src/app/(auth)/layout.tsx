@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-import { getTokens } from "@/utils/auth/getTokens";
+import { getTokens } from "@/utils/auth/getToken";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -11,7 +11,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     async function TokenCheck() {
-      const accessToken = (await getTokens());
+      const accessToken = await getTokens();
       if (!accessToken) {
         setHasTokens(false);
       } else {
