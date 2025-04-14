@@ -52,32 +52,37 @@ export default function ChangePassPage() {
       <main className="grid justify-items-center">
         <div className="grid place-items-center h-screen">
           {loading ? (
-            <button
-              type="button"
-              className="m-[300px] inline-flex items-center"
-            >
-              <svg
-                className="-ml-1 mr-3 h-5 w-5 animate-spin text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              <p className="text-2xl">Загрузка...</p>
-            </button>
+            <div className="grid place-items-center h-[138px] w-[514px] bg-white rounded-[60px]">
+              <div className="h-[122px] w-[495px] bg-[#FF00A9] rounded-[50px]">
+                <div className="grid place-items-center my-[30px]">
+                  <button type="button" className="inline-flex items-center">
+                    <svg
+                      className="mr-[40px] h-5 w-5 animate-spin text-white scale-[200%]"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <p className="text-[40px] font-[1000] italic">
+                      Загрузка...
+                    </p>
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : finished ? (
             <div className="div">
               <p>
@@ -96,30 +101,40 @@ export default function ChangePassPage() {
                 onClose={hideNotification}
                 duration={5000}
               />
-              <div>
-                <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  className="grid space-y-4 justify-self-center"
-                >
-                  <h1 className="mb-3 justify-self-center text-2xl">
-                    Восстановление пароля
-                  </h1>
-                  <input
-                    className="rounded-md border-[1px] border-black p-1 text-black bg-white"
-                    placeholder="Ваша почта"
-                    type="text"
-                    {...register("email", { required: true })}
-                  />
-                  <button
-                    type="submit"
-                    className="hover:scale-102 rounded-md bg-[#3D8361] px-5 py-2 text-xl text-white duration-300 hover:bg-[#2F6A4E]"
-                  >
-                    Восстановить пароль
-                  </button>
-                </form>
-              </div>
-              <div className="mt-3 grid justify-items-center hover:scale-102 duration-300">
-                <Link href="/signin">↩ Вернуться назад</Link>
+              <div className="grid place-items-center h-[550px] w-[460px] bg-white rounded-[60px]">
+                <div className="h-[524px] w-[431px] bg-[#7500DB] rounded-[50px]">
+                  <div>
+                    <form
+                      onSubmit={handleSubmit(onSubmit)}
+                      className="grid justify-self-center"
+                    >
+                      <div className="h-[100px] mt-[60px] leading-[50px]">
+                        <p className="justify-self-center text-[40px] font-[1000] text-white italic">
+                          Восстановление
+                        </p>
+                        <p className="justify-self-center text-[40px] font-[1000] text-white italic">
+                          пароля
+                        </p>
+                      </div>
+                      <input
+                        className="rounded-[60px] text-gray-950 text-[22px] font-[800] bg-white mt-[34px] h-[61px] w-[343px] px-[30px]"
+                        placeholder="Ваша почта"
+                        type="text"
+                        {...register("email", { required: true })}
+                      />
+                      <button
+                        type="submit"
+                        className="hover:scale-102 rounded-[60px] bg-[#FF00A9] text-[30px] text-white font-[1000] italic duration-300 hover:bg-[#ff00aaa9] mt-[50px] h-[108px] w-[343px]"
+                      >
+                        <p>Восстановить</p>
+                        <p>пароль</p>
+                      </button>
+                    </form>
+                  </div>
+                  <div className="mt-[28px] grid justify-items-center hover:scale-102 duration-300 text-[16px] font-[800] underline decoration-[4.5%] underline-offset-[11%] text-white/80 h-[20px]">
+                    <Link href="/signin">↩ Вернуться назад</Link>
+                  </div>
+                </div>
               </div>
             </div>
           )}
