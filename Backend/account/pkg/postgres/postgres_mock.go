@@ -33,7 +33,12 @@ func (m *MockPostgres) UpdateUserPassword(user *User, newPassword string) error 
 	return args.Error(0)
 }
 
-func (m *MockPostgres) GetUserByUUID(id int) User {
+func (m *MockPostgres) ChangeUser(user *User) bool {
+	args := m.Called(user)
+	return args.Bool(0)
+}
+
+func (m *MockPostgres) GetUserById(id int) User {
 	args := m.Called(id)
 	return args.Get(0).(User)
 }

@@ -8,7 +8,8 @@ type PostgresInterface interface {
 	ChangePassword(user *User, newPassword string) error
 	CreateUser(user *User) bool
 	UpdateUserPassword(user *User, newPassword string) error
-	GetUserByUUID(id int) User
+	ChangeUser(user *User) bool
+	GetUserById(id int) User
 	GetUserByEmail(email string) User
 	DeleteUser(id int)
 	AcceptFriendRequest(id1 int, id2 int)

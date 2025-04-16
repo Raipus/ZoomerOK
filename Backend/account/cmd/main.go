@@ -39,6 +39,21 @@ func run_http_server() {
 	router.POST(config.Config.Prefix+"/want_change_password", func(c *gin.Context) {
 		handlers.WantChangePassword(c, postgres.ProductionPostgresInterface, mockSmtp, caching.ProductionCachingInterface)
 	})
+	router.POST(config.Config.Prefix+"/add_friend", func(c *gin.Context) {
+		handlers.AddFriend(c, postgres.ProductionPostgresInterface, mockSmtp, caching.ProductionCachingInterface)
+	})
+	router.DELETE(config.Config.Prefix+"/delete_friend", func(c *gin.Context) {
+		handlers.DeleteFriend(c, postgres.ProductionPostgresInterface, mockSmtp, caching.ProductionCachingInterface)
+	})
+	router.DELETE(config.Config.Prefix+"/delete_user", func(c *gin.Context) {
+		handlers.DeleteUser(c, postgres.ProductionPostgresInterface, mockSmtp, caching.ProductionCachingInterface)
+	})
+	router.PUT(config.Config.Prefix+"/change_user", func(c *gin.Context) {
+		handlers.ChangeUser(c, postgres.ProductionPostgresInterface, mockSmtp, caching.ProductionCachingInterface)
+	})
+	router.GET(config.Config.Prefix+"/get_user", func(c *gin.Context) {
+		handlers.GetUser(c, postgres.ProductionPostgresInterface, mockSmtp, caching.ProductionCachingInterface)
+	})
 	router.Run(http_server)
 }
 

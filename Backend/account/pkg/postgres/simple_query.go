@@ -9,6 +9,14 @@ func (Instance *RealPostgres) CreateUser(user *User) bool {
 	return true
 }
 
+func (Instance *RealPostgres) ChangeUser(user *User) bool {
+	result := Instance.instance.Save(user)
+	if result.Error != nil {
+		return false
+	}
+	return true
+}
+
 func (Instance *RealPostgres) UpdateUserPassword(user *User, newPassword string) error {
 	user.Password = newPassword
 	if err := Instance.instance.Save(&user).Error; err != nil {
@@ -18,23 +26,7 @@ func (Instance *RealPostgres) UpdateUserPassword(user *User, newPassword string)
 	return nil
 }
 
-/*
-func CreatePhoto(db *gorm.DB, name string, data []byte) {
-	photo := Photo{Name: name, Data: data}
-	result := db.Create(&photo)
-	if result.Error != nil {
-		log.Println("Error creating photo:", result.Error)
-	}
-}
-
-func GetPhoto(db *gorm.DB, id uint) Photo {
-	var photo Photo
-	db.First(&photo, id)
-	return photo
-}
-*/
-
-func (Instance *RealPostgres) GetUserByUUID(id int) User {
+func (Instance *RealPostgres) GetUserById(id int) User {
 	var user User
 	Instance.instance.Model(&User{Id: id}).First(&user)
 	return user

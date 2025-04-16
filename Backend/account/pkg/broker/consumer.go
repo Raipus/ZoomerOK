@@ -8,6 +8,7 @@ import (
 )
 
 func (broker *RealBroker) Listen() {
+	log.Println("Start listening")
 	for {
 		m, err := broker.reader.ReadMessage(broker.parent)
 		if err != nil {
