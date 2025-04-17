@@ -2,21 +2,24 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/gin-gonic/gin"
 )
 
-func DeleteComment(c *gin.Context, db postgres.PostgresInterface) {
-	commentId, err := strconv.Atoi(c.Param("commentId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID комментария"})
+type DeletePostForm struct {
+	PostId int
+}
+
+func DeletePost(c *gin.Context, db postgres.PostgresInterface) {
+	var deletePostForm DeletePostForm
+	if err := c.ShouldBindJSON(&deletePostForm); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
 		return
 	}
 
-	userId := c.MustGet("userId").(int)
-	if err := db.DeleteComment(userId, commentId); err != nil {
+	userId := 1
+	if err := db.DeletePost(userId, commentId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при удалении комментария"})
 		return
 	}

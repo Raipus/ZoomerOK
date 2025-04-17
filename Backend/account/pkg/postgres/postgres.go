@@ -11,6 +11,7 @@ type PostgresInterface interface {
 	ChangeUser(user *User) bool
 	GetUserById(id int) User
 	GetUserByEmail(email string) User
+	GetUserByLogin(login string) User
 	DeleteUser(id int)
 	AcceptFriendRequest(id1 int, id2 int)
 	DeleteFriendRequest(id1 int, id2 int)

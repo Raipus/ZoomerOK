@@ -2,16 +2,13 @@ package postgres
 
 import (
 	"errors"
-
-	"gorm.io/gorm"
 )
 
-func NewPostgresRepository(db *gorm.DB) *PostgresRepository {
-	return &PostgresRepository{db: db}
-}
-
-func (r *PostgresRepository) CreatePost(userId int, post *Post) error {
+func (r *PostgresRepository) CreatePost(userId int, text string, photo []byte) error {
+	var post Post
 	post.UserId = userId
+	post.Text = text
+	post.Photo = photo
 	return r.db.Create(post).Error
 }
 
@@ -26,8 +23,10 @@ func (r *PostgresRepository) DeletePost(userId int, postId int) error {
 	return r.db.Delete(&post).Error
 }
 
-func (r *PostgresRepository) CreateComment(userId int, comment *Comment) error {
+func (r *PostgresRepository) CreateComment(userId int, text string) error {
+	var comment Comment
 	comment.UserId = userId
+	comment.Text = text
 	return r.db.Create(comment).Error
 }
 
@@ -50,7 +49,7 @@ func (r *PostgresRepository) GetPost(postId int) (*Post, error) {
 	return &post, nil
 }
 
-func (r *PostgresRepository) GetPosts(userId int) ([]Post, error) {
+func (r *PostgresRepository) GetPosts(userIds []int) ([]Post, error) {
 	var posts []Post
 	if err := r.db.Where("user_id = ?", userId).Find(&posts).Error; err != nil {
 		return nil, err
@@ -58,7 +57,7 @@ func (r *PostgresRepository) GetPosts(userId int) ([]Post, error) {
 	return posts, nil
 }
 
-func (r *PostgresRepository) Like(postId int, userId int) error {
+func (r *PostgresRepository) Like(userId int, postId int) error {
 	like := Like{PostId: postId, UserId: userId}
 	return r.db.Create(&like).Error
 }

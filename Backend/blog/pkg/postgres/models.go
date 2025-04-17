@@ -12,7 +12,7 @@ type Post struct {
 	UserId int
 	Text   string    `gorm:"not null"`
 	Photo  []byte    `gorm:"type:bytea"`
-	Date   time.Time `gorm:"not null"`
+	Time   time.Time `gorm:"not null"`
 }
 
 type Comment struct {

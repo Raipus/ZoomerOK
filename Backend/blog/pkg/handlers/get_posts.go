@@ -3,11 +3,12 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/Raipus/ZoomerOK/account/pkg/broker"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/gin-gonic/gin"
 )
 
-func GetPosts(c *gin.Context, db postgres.PostgresInterface) {
+func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.BrokerInterface) {
 	userId := c.MustGet("userId").(int)
 	posts, err := db.GetPosts(userId)
 	if err != nil {

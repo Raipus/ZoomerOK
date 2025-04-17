@@ -48,6 +48,11 @@ func (m *MockPostgres) GetUserByEmail(email string) User {
 	return args.Get(0).(User)
 }
 
+func (m *MockPostgres) GetUserByLogin(login string) User {
+	args := m.Called(login)
+	return args.Get(0).(User)
+}
+
 func (m *MockPostgres) DeleteUser(id int) {
 	m.Called(id)
 }

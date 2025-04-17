@@ -38,6 +38,12 @@ func (Instance *RealPostgres) GetUserByEmail(email string) User {
 	return user
 }
 
+func (Instance *RealPostgres) GetUserByLogin(login string) User {
+	var user User
+	Instance.instance.Model(&User{Login: login}).First(&user)
+	return user
+}
+
 func (Instance *RealPostgres) DeleteUser(id int) {
 	var user User
 	Instance.instance.Where(&User{Id: id}).Find(&user)

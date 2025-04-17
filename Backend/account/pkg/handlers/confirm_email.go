@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
@@ -13,7 +12,6 @@ func ConfirmEmail(c *gin.Context, db postgres.PostgresInterface, cache caching.C
 	confirmationLink := c.Param("confirmation_link")
 
 	username := cache.GetCacheConfirmationLink(confirmationLink)
-	fmt.Println("asfd", username)
 	if username == "" {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 	} else {

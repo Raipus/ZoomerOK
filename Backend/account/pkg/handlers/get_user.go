@@ -8,7 +8,7 @@ import (
 )
 
 type GetUserForm struct {
-	Id int
+	Login string
 }
 
 func GetUser(c *gin.Context, db postgres.PostgresInterface) {
@@ -17,7 +17,7 @@ func GetUser(c *gin.Context, db postgres.PostgresInterface) {
 		return
 	}
 
-	user := db.GetUserByEmail(newUserForm.Id)
+	user := db.GetUserByLogin(newUserForm.Login)
 	if postgres.CompareUsers(user, postgres.User{}) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Пользователь не найден",

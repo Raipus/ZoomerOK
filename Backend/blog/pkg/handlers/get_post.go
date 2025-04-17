@@ -2,16 +2,19 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/gin-gonic/gin"
 )
 
-func GetPost(c *gin.Context, db postgres.PostgresInterface) {
-	postId, err := strconv.Atoi(c.Param("postId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID поста"})
+type GetPostForm struct {
+	PostId int
+}
+
+func GetPost(c *gin.Context, db postgres.PostgresInterface, broker broker.BrokerInterface) {
+	var getPostForm GetPostForm
+	if err := c.ShouldBindJSON(&getPostForm); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
 		return
 	}
 
