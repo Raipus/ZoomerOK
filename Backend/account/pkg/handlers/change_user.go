@@ -2,26 +2,38 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/gin-gonic/gin"
 )
 
-func ChangeUserHandler(c *gin.Context, db postgres.PostgresInterface) {
-	var user postgres.User
+type ChangeUserForm struct {
+	Name     string     `json:"name"`
+	Birthday *time.Time `json:"birthday"`
+	Phone    string     `json:"phone"`
+	City     string     `json:"city"`
+	Image    []byte     `json:"image"`
+}
 
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
+func ChangeUser(c *gin.Context, db postgres.PostgresInterface) {
+	login := c.Param("login")
+
+	var newChangeUser ChangeUserForm
+	if err := c.BindJSON(&newChangeUser); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Некорректный формат данных: " + err.Error(),
+		})
 		return
 	}
 
-	userId, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Пользователь не авторизован"})
+	user := db.GetUserByLogin(login)
+	if postgres.CompareUsers(user, postgres.User{}) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "пользователь не найден!",
+		})
 		return
 	}
-
-	user.Id = userId.(int)
 
 	if success := db.ChangeUser(&user); !success {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при изменении пользователя"})

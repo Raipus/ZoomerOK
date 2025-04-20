@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -13,13 +14,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetUser(t *testing.T) {
+func TestChangeUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
-	r.GET("/user/:login", func(c *gin.Context) {
-		GetUser(c, mockPostgres)
-	})
 
 	var login string = "testuser"
 	birthday := time.Now()
@@ -36,23 +34,34 @@ func TestGetUser(t *testing.T) {
 		Image:          nil,
 	}
 
-	mockPostgres.On("GetUserByLogin", login).Return(user)
+	r.PUT("/user/:login", func(c *gin.Context) {
+		ChangeUser(c, mockPostgres)
+	})
 
-	req, _ := http.NewRequest("GET", "/user/"+login, nil)
+	mockPostgres.On("GetUserByLogin", login).Return(user)
+	mockPostgres.On("ChangeUser", &user).Return(true)
+
+	changeUserData := ChangeUserForm{
+		Name:     "Обновленный Пользователь",
+		Birthday: &birthday,
+		Phone:    "987-654-3210",
+		City:     "Санкт-Петербург",
+		Image:    nil,
+	}
+
+	jsonData, err := json.Marshal(changeUserData)
+	if err != nil {
+		t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
+	}
+
+	req, err := http.NewRequest("PUT", "/user/"+login, bytes.NewBuffer(jsonData))
+	if err != nil {
+		t.Fatalf("Ошибка при создании запроса: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-	mockPostgres.AssertExpectations(t)
 
-	expectedResponse := gin.H{
-		"login":           user.Login,
-		"name":            user.Name,
-		"email":           user.Email,
-		"confirmed_email": user.ConfirmedEmail,
-		"image":           interface{}(nil),
-	}
-	var actualResponse gin.H
-	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)
-	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, actualResponse)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.JSONEq(t, `{"message": "Пользователь успешно обновлен"}`, w.Body.String())
 }

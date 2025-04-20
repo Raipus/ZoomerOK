@@ -58,8 +58,8 @@ func (m *MockPostgres) GetUserByLogin(login string) User {
 	return args.Get(0).(User)
 }
 
-func (m *MockPostgres) DeleteUser(id int) {
-	m.Called(id)
+func (m *MockPostgres) DeleteUser(user *User) {
+	m.Called(user)
 }
 
 func (m *MockPostgres) AcceptFriendRequest(id1 int, id2 int) error {

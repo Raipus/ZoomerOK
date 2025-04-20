@@ -8,8 +8,8 @@ import (
 )
 
 type AcceptFriendForm struct {
-	UserId       int
-	FriendUserId int
+	UserId       int `json:"user_id"`
+	FriendUserId int `json:"friend_user_id"`
 }
 
 func AcceptFriend(c *gin.Context, db postgres.PostgresInterface) {

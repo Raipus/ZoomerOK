@@ -13,7 +13,7 @@ type PostgresInterface interface {
 	GetUserById(id int) User
 	GetUserByEmail(email string) User
 	GetUserByLogin(login string) User
-	DeleteUser(id int)
+	DeleteUser(user *User)
 	AcceptFriendRequest(id1 int, id2 int) error
 	AddFriendRequest(id1 int, id2 int) error
 	ExistFriendRequest(id1 int, id2 int) (Friend, error)

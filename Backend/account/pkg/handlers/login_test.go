@@ -52,5 +52,4 @@ func TestLogin(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResponse, actualResponse)
 	mockPostgres.AssertExpectations(t)
-	mockPostgres.Calls = nil
 }

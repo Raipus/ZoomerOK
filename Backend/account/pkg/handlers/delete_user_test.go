@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,13 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetUser(t *testing.T) {
+func TestDeleteUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
-	r.GET("/user/:login", func(c *gin.Context) {
-		GetUser(c, mockPostgres)
-	})
 
 	var login string = "testuser"
 	birthday := time.Now()
@@ -36,23 +32,18 @@ func TestGetUser(t *testing.T) {
 		Image:          nil,
 	}
 
-	mockPostgres.On("GetUserByLogin", login).Return(user)
+	r.DELETE("/user/:login", func(c *gin.Context) {
+		DeleteUser(c, mockPostgres)
+	})
 
-	req, _ := http.NewRequest("GET", "/user/"+login, nil)
+	mockPostgres.On("GetUserByLogin", login).Return(user)
+	mockPostgres.On("DeleteUser", &user).Return()
+
+	req, err := http.NewRequest("DELETE", "/user/"+login, nil)
+	if err != nil {
+		t.Fatalf("Ошибка при создании запроса: %v", err)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	mockPostgres.AssertExpectations(t)
-
-	expectedResponse := gin.H{
-		"login":           user.Login,
-		"name":            user.Name,
-		"email":           user.Email,
-		"confirmed_email": user.ConfirmedEmail,
-		"image":           interface{}(nil),
-	}
-	var actualResponse gin.H
-	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)
-	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, actualResponse)
 }

@@ -58,8 +58,6 @@ func (Instance *RealPostgres) ConfirmEmail(login string) bool {
 	return true
 }
 
-func (Instance *RealPostgres) DeleteUser(id int) {
-	var user User
-	Instance.instance.Where(&User{Id: id}).Find(&user)
+func (Instance *RealPostgres) DeleteUser(user *User) {
 	Instance.instance.Delete(&user)
 }

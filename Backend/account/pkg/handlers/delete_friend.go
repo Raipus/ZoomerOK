@@ -8,8 +8,8 @@ import (
 )
 
 type DeleteFriendForm struct {
-	UserId       int
-	FriendUserId int
+	UserId       int `json:"user_id"`
+	FriendUserId int `json:"friend_user_id"`
 }
 
 func DeleteFriend(c *gin.Context, db postgres.PostgresInterface) {

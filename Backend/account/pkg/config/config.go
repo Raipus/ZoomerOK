@@ -48,8 +48,9 @@ type PhotoConfig struct {
 	Default       string `mapstructure:"DEFAULT"`
 	Image         string
 	ByteImage     []byte
-	Small         uint `mapstructure:"SMALL"`
-	Large         uint `mapstructure:"LARGE"`
+	Small         uint   `mapstructure:"SMALL"`
+	Large         uint   `mapstructure:"LARGE"`
+	Base64Small   string `mapstructure:"BASE64_SMALL"`
 }
 
 func LoadConfig() (c *ConfigType) {
