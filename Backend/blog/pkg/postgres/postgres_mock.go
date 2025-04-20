@@ -8,8 +8,8 @@ type MockPostgres struct {
 	mock.Mock
 }
 
-func (m *MockPostgres) CreatePost(userId int, post *Post) error {
-	args := m.Called(userId, post)
+func (m *MockPostgres) CreatePost(userId int, text string, photo []byte) error {
+	args := m.Called(userId, text, photo)
 	return args.Error(0)
 }
 
@@ -18,8 +18,8 @@ func (m *MockPostgres) DeletePost(userId int, postId int) error {
 	return args.Error(0)
 }
 
-func (m *MockPostgres) CreateComment(userId int, comment *Comment) error {
-	args := m.Called(userId, comment)
+func (m *MockPostgres) CreateComment(userId int, text string) error {
+	args := m.Called(userId, text)
 	return args.Error(0)
 }
 

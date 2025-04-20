@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/Raipus/ZoomerOK/account/pkg/config"
+	"github.com/Raipus/ZoomerOK/blog/pkg/config"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -46,11 +46,14 @@ func Init() {
 }
 
 func Migrate() {
-	if err := Instance.AutoMigrate(&User{}); err != nil {
-		log.Fatalf("Error migrating User: %v", err)
+	if err := Instance.AutoMigrate(&Post{}); err != nil {
+		log.Fatalf("Error migrating Post: %v", err)
 	}
-	if err := Instance.AutoMigrate(&Friend{}); err != nil {
-		log.Fatalf("Error migrating Friend: %v", err)
+	if err := Instance.AutoMigrate(&Comment{}); err != nil {
+		log.Fatalf("Error migrating Comment: %v", err)
+	}
+	if err := Instance.AutoMigrate(&Like{}); err != nil {
+		log.Fatalf("Error migrating Like: %v", err)
 	}
 	log.Println("Database Migration Completed!")
 }
