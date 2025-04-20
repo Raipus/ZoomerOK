@@ -7,21 +7,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AddFriendForm struct {
+type AcceptFriendForm struct {
 	UserId       int
 	FriendUserId int
 }
 
-func AddFriend(c *gin.Context, db postgres.PostgresInterface) {
-	var newAddFriendForm AddFriendForm
-	if err := c.BindJSON(&newAddFriendForm); err != nil {
+func AcceptFriend(c *gin.Context, db postgres.PostgresInterface) {
+	var newAcceptFriendForm AcceptFriendForm
+	if err := c.BindJSON(&newAcceptFriendForm); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Некорректный формат данных: " + err.Error(),
 		})
 		return
 	}
 
-	if err := db.AddFriendRequest(newAddFriendForm.UserId, newAddFriendForm.FriendUserId); err != nil {
+	if err := db.AcceptFriendRequest(newAcceptFriendForm.UserId, newAcceptFriendForm.FriendUserId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})

@@ -14,8 +14,11 @@ type PostgresInterface interface {
 	GetUserByEmail(email string) User
 	GetUserByLogin(login string) User
 	DeleteUser(id int)
-	AcceptFriendRequest(id1 int, id2 int)
-	DeleteFriendRequest(id1 int, id2 int)
+	AcceptFriendRequest(id1 int, id2 int) error
+	AddFriendRequest(id1 int, id2 int) error
+	ExistFriendRequest(id1 int, id2 int) (Friend, error)
+	CheckUserExist(id1 int, id2 int) error
+	DeleteFriendRequest(id1 int, id2 int) error
 }
 
 var ProductionPostgresInterface PostgresInterface = &RealPostgres{instance: initPostgres()}

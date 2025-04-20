@@ -62,10 +62,27 @@ func (m *MockPostgres) DeleteUser(id int) {
 	m.Called(id)
 }
 
-func (m *MockPostgres) AcceptFriendRequest(id1 int, id2 int) {
-	m.Called(id1, id2)
+func (m *MockPostgres) AcceptFriendRequest(id1 int, id2 int) error {
+	args := m.Called(id1, id2)
+	return args.Error(0)
 }
 
-func (m *MockPostgres) DeleteFriendRequest(id1 int, id2 int) {
-	m.Called(id1, id2)
+func (m *MockPostgres) AddFriendRequest(id1 int, id2 int) error {
+	args := m.Called(id1, id2)
+	return args.Error(0)
+}
+
+func (m *MockPostgres) DeleteFriendRequest(id1 int, id2 int) error {
+	args := m.Called(id1, id2)
+	return args.Error(0)
+}
+
+func (m *MockPostgres) ExistFriendRequest(id1 int, id2 int) (Friend, error) {
+	args := m.Called(id1, id2)
+	return args.Get(0).(Friend), args.Error(1)
+}
+
+func (m *MockPostgres) CheckUserExist(id1 int, id2 int) error {
+	args := m.Called(id1, id2)
+	return args.Error(0)
 }

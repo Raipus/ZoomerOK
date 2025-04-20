@@ -13,28 +13,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddFriend(t *testing.T) {
+func TestDeleteFriend(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 
-	acceptFriendData := AddFriendForm{
+	deleteFriendData := DeleteFriendForm{
 		UserId:       1,
 		FriendUserId: 2,
 	}
 
-	mockPostgres.On("AddFriendRequest", acceptFriendData.UserId, acceptFriendData.FriendUserId).Return(nil)
+	mockPostgres.On("DeleteFriendRequest", deleteFriendData.UserId, deleteFriendData.FriendUserId).Return(nil)
 
-	jsonData, err := json.Marshal(acceptFriendData)
+	jsonData, err := json.Marshal(deleteFriendData)
 	if err != nil {
 		t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
 	}
 
-	r.POST("/add_friend", func(c *gin.Context) {
-		AddFriend(c, mockPostgres)
+	r.PUT("/delete_friend", func(c *gin.Context) {
+		DeleteFriend(c, mockPostgres)
 	})
 
-	req, err := http.NewRequest(http.MethodPost, "/add_friend", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodPut, "/delete_friend", bytes.NewBuffer(jsonData))
 	if err != nil {
 		t.Fatalf("Ошибка при создании запроса: %v", err)
 	}

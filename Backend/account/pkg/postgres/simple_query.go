@@ -63,16 +63,3 @@ func (Instance *RealPostgres) DeleteUser(id int) {
 	Instance.instance.Where(&User{Id: id}).Find(&user)
 	Instance.instance.Delete(&user)
 }
-
-func (Instance *RealPostgres) AcceptFriendRequest(id1 int, id2 int) {
-	var friend Friend
-	Instance.instance.Where(&Friend{User1Id: id1, User2Id: id2}).Find(&friend)
-	friend.Accepted = true
-	Instance.instance.Save(&friend)
-}
-
-func (Instance *RealPostgres) DeleteFriendRequest(id1 int, id2 int) {
-	var friend Friend
-	Instance.instance.Where(&Friend{User1Id: id1, User2Id: id2}).Find(&friend)
-	Instance.instance.Delete(&friend)
-}
