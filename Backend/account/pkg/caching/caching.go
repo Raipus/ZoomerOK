@@ -9,8 +9,8 @@ import (
 
 // CachingInterface определяет методы для кэширования
 type CachingInterface interface {
-	SetCacheResetLink(username, resetLink string)
-	SetCacheConfirmationLink(username, confirmationLink string)
+	SetCacheResetLink(login, resetLink string)
+	SetCacheConfirmationLink(login, confirmationLink string)
 	GetCacheResetLink(resetLink string) string
 	GetCacheConfirmationLink(confirmationLink string) string
 	DeleteCacheResetLink(resetLink string)
@@ -31,14 +31,14 @@ func initCache() *cache.Cache {
 }
 
 // Реализация методов интерфейса CachingInterface
-func (r *RealCache) SetCacheResetLink(username, resetLink string) {
+func (r *RealCache) SetCacheResetLink(login, resetLink string) {
 	key := config.Config.ResetCache + "_" + resetLink
-	r.cache.Set(key, username, cache.DefaultExpiration)
+	r.cache.Set(key, login, cache.DefaultExpiration)
 }
 
-func (r *RealCache) SetCacheConfirmationLink(username, confirmationLink string) {
+func (r *RealCache) SetCacheConfirmationLink(login, confirmationLink string) {
 	key := config.Config.ConfirmationCache + "_" + confirmationLink
-	r.cache.Set(key, username, cache.DefaultExpiration)
+	r.cache.Set(key, login, cache.DefaultExpiration)
 }
 
 func (r *RealCache) GetCacheResetLink(resetLink string) string {
@@ -47,11 +47,11 @@ func (r *RealCache) GetCacheResetLink(resetLink string) string {
 	if !found {
 		return ""
 	}
-	username, ok := value.(string)
+	login, ok := value.(string)
 	if !ok {
 		return ""
 	}
-	return username
+	return login
 }
 
 func (r *RealCache) GetCacheConfirmationLink(confirmationLink string) string {
@@ -60,11 +60,11 @@ func (r *RealCache) GetCacheConfirmationLink(confirmationLink string) string {
 	if !found {
 		return ""
 	}
-	username, ok := value.(string)
+	login, ok := value.(string)
 	if !ok {
 		return ""
 	}
-	return username
+	return login
 }
 
 func (r *RealCache) DeleteCacheResetLink(resetLink string) {

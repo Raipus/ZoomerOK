@@ -10,12 +10,12 @@ type MockCache struct {
 }
 
 // Реализация методов интерфейса CachingInterface для MockCache
-func (m *MockCache) SetCacheResetLink(username, resetLink string) {
-	m.Called(username, resetLink)
+func (m *MockCache) SetCacheResetLink(login, resetLink string) {
+	m.Called(login, resetLink)
 }
 
-func (m *MockCache) SetCacheConfirmationLink(username, confirmationLink string) {
-	m.Called(username, confirmationLink)
+func (m *MockCache) SetCacheConfirmationLink(login, confirmationLink string) {
+	m.Called(login, confirmationLink)
 }
 
 func (m *MockCache) GetCacheResetLink(resetLink string) string {

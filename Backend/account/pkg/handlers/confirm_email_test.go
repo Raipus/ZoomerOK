@@ -7,29 +7,27 @@ import (
 
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
+	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConfirmEmailWithUsername(t *testing.T) {
-	// Устанавливаем режим тестирования для Gin
+func TestConfirmEmailWithLogin(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	router := gin.Default()
-
-	// Создаем mock для кэширования
+	r := router.SetupRouter(false)
 	mockCache := new(caching.MockCache)
-
 	mockPostgres := new(postgres.MockPostgres)
-	// Настраиваем тестовые данные
+
 	confirmationLink := "someResetLink"
-	username := "user2"
+	login := "user2"
 
 	// Тест для случая, когда username найден
-	mockCache.On("GetCacheConfirmationLink", confirmationLink).Return(username)
+	mockCache.On("GetCacheConfirmationLink", confirmationLink).Return(login)
 	mockCache.On("DeleteCacheConfirmationLink", confirmationLink).Return()
+	mockPostgres.On("ConfirmEmail", login).Return(true)
 
 	// Регистрируем обработчик с использованием mockCache
-	router.GET("/confirm_email/:confirmation_link", func(c *gin.Context) {
+	r.GET("/confirm_email/:confirmation_link", func(c *gin.Context) {
 		ConfirmEmail(c, mockPostgres, mockCache)
 	})
 
@@ -38,17 +36,19 @@ func TestConfirmEmailWithUsername(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// Выполняем запрос
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
 	// Проверяем статус-код
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Проверяем, что ожидания выполнены
 	mockCache.AssertExpectations(t)
-
+	mockPostgres.AssertExpectations(t)
+	mockPostgres.Calls = nil
+	mockCache.Calls = nil
 }
 
-func TestConfirmEmailWithoutUsername(t *testing.T) {
+func TestConfirmEmailWithoutLogin(t *testing.T) {
 	// Устанавливаем режим тестирования для Gin
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
@@ -81,4 +81,6 @@ func TestConfirmEmailWithoutUsername(t *testing.T) {
 	// Проверяем, что ожидания выполнены
 	mockCache.AssertExpectations(t)
 	mockCache.AssertCalled(t, "GetCacheConfirmationLink", confirmationLink)
+	mockCache.Calls = nil
+	mockPostgres.Calls = nil
 }

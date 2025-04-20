@@ -44,6 +44,20 @@ func (Instance *RealPostgres) GetUserByLogin(login string) User {
 	return user
 }
 
+func (Instance *RealPostgres) ConfirmEmail(login string) bool {
+	user := Instance.GetUserByLogin(login)
+	if user.Login != "" {
+		return false
+	}
+
+	user.ConfirmedEmail = true
+	result := Instance.instance.Save(user)
+	if result.Error != nil {
+		return false
+	}
+	return true
+}
+
 func (Instance *RealPostgres) DeleteUser(id int) {
 	var user User
 	Instance.instance.Where(&User{Id: id}).Find(&user)

@@ -9,6 +9,7 @@ type PostgresInterface interface {
 	CreateUser(user *User) bool
 	UpdateUserPassword(user *User, newPassword string) error
 	ChangeUser(user *User) bool
+	ConfirmEmail(login string) bool
 	GetUserById(id int) User
 	GetUserByEmail(email string) User
 	GetUserByLogin(login string) User

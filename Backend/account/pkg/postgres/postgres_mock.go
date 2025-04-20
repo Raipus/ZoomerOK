@@ -38,6 +38,11 @@ func (m *MockPostgres) ChangeUser(user *User) bool {
 	return args.Bool(0)
 }
 
+func (m *MockPostgres) ConfirmEmail(login string) bool {
+	args := m.Called(login)
+	return args.Bool(0)
+}
+
 func (m *MockPostgres) GetUserById(id int) User {
 	args := m.Called(id)
 	return args.Get(0).(User)

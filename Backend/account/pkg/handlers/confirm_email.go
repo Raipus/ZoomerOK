@@ -11,10 +11,14 @@ import (
 func ConfirmEmail(c *gin.Context, db postgres.PostgresInterface, cache caching.CachingInterface) {
 	confirmationLink := c.Param("confirmation_link")
 
-	username := cache.GetCacheConfirmationLink(confirmationLink)
-	if username == "" {
+	login := cache.GetCacheConfirmationLink(confirmationLink)
+	if login == "" {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 	} else {
+		confirmed := db.ConfirmEmail(login)
+		if !confirmed {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Login not found"})
+		}
 		cache.DeleteCacheConfirmationLink(confirmationLink)
 		c.JSON(http.StatusOK, gin.H{})
 	}
