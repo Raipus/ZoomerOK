@@ -51,7 +51,7 @@ func TestConfirmEmailWithLogin(t *testing.T) {
 func TestConfirmEmailWithoutLogin(t *testing.T) {
 	// Устанавливаем режим тестирования для Gin
 	gin.SetMode(gin.TestMode)
-	router := gin.Default()
+	r := router.SetupRouter(false)
 
 	// Создаем mock для кэширования
 	mockCache := new(caching.MockCache)
@@ -64,18 +64,14 @@ func TestConfirmEmailWithoutLogin(t *testing.T) {
 	mockCache.On("GetCacheConfirmationLink", confirmationLink).Return("")
 
 	// Регистрируем обработчик с использованием mockCache
-	router.GET("/confirm_email/:confirmation_link", func(c *gin.Context) {
+	r.GET("/confirm_email/:confirmation_link", func(c *gin.Context) {
 		ConfirmEmail(c, mockPostgres, mockCache)
 	})
 
 	// Создаем тестовый запрос
 	req, _ := http.NewRequest(http.MethodGet, "/confirm_email/"+confirmationLink, nil)
-
-	// Выполняем запрос снова
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	// Проверяем статус-код для случая отсутствия username
+	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNotFound, w.Code)
 
 	// Проверяем, что ожидания выполнены
