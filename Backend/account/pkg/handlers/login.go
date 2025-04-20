@@ -8,25 +8,26 @@ import (
 )
 
 type LoginForm struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	LoginOrEmail string `json:"login_or_email"`
+	Password     string `json:"password"`
 }
 
 func Login(c *gin.Context, db postgres.PostgresInterface) {
 	var newLoginForm LoginForm
 	if err := c.BindJSON(&newLoginForm); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Некорректный формат данных: " + err.Error(),
+		})
 		return
 	}
 
-	logined, error := db.Login(newLoginForm.Email, newLoginForm.Password)
-	if !logined {
-		if error == "Ошибка сервера" {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": error})
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": error})
-		}
+	token, error := db.Login(newLoginForm.LoginOrEmail, newLoginForm.Password)
+	if error != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": error})
 		return
 	} else {
-		c.JSON(http.StatusOK, gin.H{})
+		c.JSON(http.StatusOK, gin.H{
+			"token": token,
+		})
 	}
 }

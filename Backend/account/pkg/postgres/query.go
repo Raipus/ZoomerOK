@@ -1,32 +1,53 @@
 package postgres
 
 import (
-	"log"
-
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
 	"github.com/Raipus/ZoomerOK/account/pkg/security"
-	"gorm.io/gorm"
 )
 
 // TODO: написать валидацию данных
-func (Instance *RealPostgres) Login(email string, password string) (bool, string) {
+func (instance *RealPostgres) Login(loginOrEmail string, password string) (string, string) {
 	var user User
-	result := Instance.instance.Where(&User{Email: email}).First(&user)
 
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return false, "Неверный email"
+	// Попытка найти пользователя по email
+	resultByEmail := instance.instance.Where(&User{Email: loginOrEmail}).First(&user)
+	if resultByEmail.Error == nil { // Пользователь найден по email
+		// Проверка пароля
+		if !security.CheckPasswordHash(password, user.Password) {
+			return "", "Неверный пароль"
 		}
-		log.Println("Ошибка базы данных:", result.Error)
-		return false, "Ошибка сервера"
+		// Генерация токена
+		return generateToken(user)
 	}
 
-	checked := security.CheckPasswordHash(password, user.Password)
-	if !checked {
-		return false, "Неверный пароль"
+	// Попытка найти пользователя по логину
+	resultByLogin := instance.instance.Where(&User{Login: loginOrEmail}).First(&user)
+	if resultByLogin.Error == nil { // Пользователь найден по логину
+		// Проверка пароля
+		if !security.CheckPasswordHash(password, user.Password) {
+			return "", "Неверный пароль"
+		}
+		// Генерация токена
+		return generateToken(user)
 	}
 
-	return true, ""
+	// Если пользователь не найден ни по email, ни по логину
+	return "", "Неверный login или email"
+}
+
+func generateToken(user User) (string, string) {
+	userToken := security.UserToken{
+		Id:    user.Id,
+		Name:  user.Name,
+		Email: user.Email,
+	}
+
+	token, err := security.GenerateJWT(userToken)
+	if err != nil {
+		return "", "Ошибка сервера"
+	}
+
+	return token, ""
 }
 
 // TODO: написать валидацию данных

@@ -8,9 +8,9 @@ type MockPostgres struct {
 	mock.Mock
 }
 
-func (m *MockPostgres) Login(email string, password string) (bool, string) {
-	args := m.Called(email, password)
-	return args.Bool(0), args.String(1)
+func (m *MockPostgres) Login(loginOrEmail string, password string) (string, string) {
+	args := m.Called(loginOrEmail, password)
+	return args.String(0), args.String(1)
 }
 
 func (m *MockPostgres) Signup(login, name, email, password string) (string, bool) {

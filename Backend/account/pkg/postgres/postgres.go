@@ -3,7 +3,7 @@ package postgres
 import "gorm.io/gorm"
 
 type PostgresInterface interface {
-	Login(email string, password string) (bool, string)
+	Login(loginOrEmail string, password string) (string, string)
 	Signup(login string, name string, email string, password string) (string, bool)
 	ChangePassword(user *User, newPassword string) error
 	CreateUser(user *User) bool
