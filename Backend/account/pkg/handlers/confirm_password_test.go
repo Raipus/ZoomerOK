@@ -25,7 +25,6 @@ func TestConfirmPasswordWithLogin(t *testing.T) {
 
 	// Тест для случая, когда username найден
 	mockCache.On("GetCacheResetLink", resetLink).Return(login)
-	mockCache.On("DeleteCacheResetLink", resetLink).Return()
 
 	// Регистрируем обработчик с использованием mockCache
 	r.GET("/confirm_password/:reset_link", func(c *gin.Context) {

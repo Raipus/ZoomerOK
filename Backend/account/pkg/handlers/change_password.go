@@ -18,7 +18,9 @@ func ChangePassword(c *gin.Context, db postgres.PostgresInterface, cache caching
 
 	var newChangePasswordForm ChangePasswordForm
 	if err := c.BindJSON(&newChangePasswordForm); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Некорректный формат данных: " + err.Error(),
+		})
 		return
 	}
 
