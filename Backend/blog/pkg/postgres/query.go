@@ -4,11 +4,11 @@ import (
 	"errors"
 )
 
-func (Instance *RealPostgres) CreatePost(userId int, text string, photo []byte) error {
+func (Instance *RealPostgres) CreatePost(userId int, text string, image []byte) error {
 	var post Post
 	post.UserId = userId
 	post.Text = text
-	post.Photo = photo
+	post.Image = image
 	return Instance.instance.Create(post).Error
 }
 
@@ -55,6 +55,14 @@ func (Instance *RealPostgres) GetPosts(userId int) ([]Post, error) {
 		return nil, err
 	}
 	return posts, nil
+}
+
+func (Instance *RealPostgres) GetComments(postId int) ([]Comment, error) {
+	var comments []Comment
+	if err := Instance.instance.Where("post_id = ?", postId).Find(&comments).Error; err != nil {
+		return nil, err
+	}
+	return comments, nil
 }
 
 func (Instance *RealPostgres) Like(userId int, postId int) error {

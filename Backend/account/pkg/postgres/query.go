@@ -10,10 +10,10 @@ import (
 	"github.com/Raipus/ZoomerOK/account/pkg/security"
 )
 
-func (instance *RealPostgres) Login(loginOrEmail string, password string) (string, string) {
+func (Instance *RealPostgres) Login(loginOrEmail string, password string) (string, string) {
 	var user User
 
-	resultByEmail := instance.instance.Where(&User{Email: loginOrEmail}).First(&user)
+	resultByEmail := Instance.instance.Where(&User{Email: loginOrEmail}).First(&user)
 	if resultByEmail.Error == nil {
 		if !security.CheckPasswordHash(password, user.Password) {
 			return "", "Неверный пароль"
@@ -21,7 +21,7 @@ func (instance *RealPostgres) Login(loginOrEmail string, password string) (strin
 		return generateToken(user)
 	}
 
-	resultByLogin := instance.instance.Where(&User{Login: loginOrEmail}).First(&user)
+	resultByLogin := Instance.instance.Where(&User{Login: loginOrEmail}).First(&user)
 	if resultByLogin.Error == nil {
 		if !security.CheckPasswordHash(password, user.Password) {
 			return "", "Неверный пароль"

@@ -1,7 +1,7 @@
 package broker
 
 import (
-	"github.com/Raipus/ZoomerOK/account/pkg/broker/pb"
+	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
 	"github.com/stretchr/testify/mock"
 )
 
