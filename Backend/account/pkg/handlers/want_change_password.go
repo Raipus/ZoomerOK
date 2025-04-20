@@ -16,7 +16,9 @@ type WantChangePasswordForm struct {
 func WantChangePassword(c *gin.Context, db postgres.PostgresInterface, smtp security.SMTPInterface, cache caching.CachingInterface) {
 	var newWantChangePasswordForm WantChangePasswordForm
 	if err := c.BindJSON(&newWantChangePasswordForm); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат данных"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Некорректный формат данных: " + err.Error(),
+		})
 		return
 	}
 

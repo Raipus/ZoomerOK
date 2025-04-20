@@ -63,9 +63,6 @@ func TestSignup(t *testing.T) {
 
 	mockPostgres.AssertExpectations(t)
 	mockSmtp.AssertExpectations(t)
-	mockPostgres.Calls = nil
-	mockSmtp.Calls = nil
-	mockCache.Calls = nil
 }
 
 func TestSignupLoginExists(t *testing.T) {
@@ -110,9 +107,6 @@ func TestSignupLoginExists(t *testing.T) {
 	assert.Equal(t, expectedResponse, actualResponse)
 
 	mockPostgres.AssertExpectations(t)
-	mockPostgres.Calls = nil
-	mockSmtp.Calls = nil
-	mockCache.Calls = nil
 }
 
 func TestSignupEmailExists(t *testing.T) {
@@ -158,7 +152,4 @@ func TestSignupEmailExists(t *testing.T) {
 	assert.Equal(t, expectedResponse, actualResponse)
 
 	mockPostgres.AssertExpectations(t)
-	mockPostgres.Calls = nil
-	mockSmtp.Calls = nil
-	mockCache.Calls = nil
 }
