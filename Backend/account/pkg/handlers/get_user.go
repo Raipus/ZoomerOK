@@ -7,25 +7,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type GetUserForm struct {
-	Login string
-}
-
 func GetUser(c *gin.Context, db postgres.PostgresInterface) {
-	var newUserForm GetUserForm
-	if err := c.BindJSON(&newUserForm); err != nil {
-		return
-	}
+	login := c.Param("login")
 
-	user := db.GetUserByLogin(newUserForm.Login)
+	user := db.GetUserByLogin(login)
 	if postgres.CompareUsers(user, postgres.User{}) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Пользователь не найден",
+			"error": "пользователь не найден!",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"email": user.Email,
+		"login":           user.Login,
+		"name":            user.Name,
+		"email":           user.Email,
+		"confirmed_email": user.ConfirmedEmail,
+		"image":           user.Image,
 	})
 }

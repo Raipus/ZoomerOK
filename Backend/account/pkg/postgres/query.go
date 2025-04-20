@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"encoding/base64"
 	"log"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
@@ -46,18 +45,17 @@ func (Instance *RealPostgres) Signup(name string, email string, password string)
 		Image:    config.Config.Photo.ByteImage,
 	}
 
-	resizedImage, err := security.ResizeImage(config.Config.Photo.ByteImage)
+	// resizedImage, err := security.ResizeImage(config.Config.Photo.ByteImage)
 
 	if err != nil {
 		return "", false
 	}
 
-	encodedImage := base64.StdEncoding.EncodeToString([]byte(resizedImage))
+	// encodedImage := base64.StdEncoding.EncodeToString([]byte(resizedImage))
 	userToken := security.UserToken{
 		Id:    user.Id,
 		Name:  user.Name,
 		Email: user.Email,
-		Image: encodedImage,
 	}
 
 	token, err := security.GenerateJWT(userToken)

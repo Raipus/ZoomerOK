@@ -9,6 +9,7 @@ import (
 type User struct {
 	gorm.Model
 	Id             int        `gorm:"type:id;primaryKey;not null"`
+	Login          string     `gorm:"not null;size:30"`
 	Name           string     `gorm:"not null;size:30"`
 	Email          string     `gorm:"not null;size:30;unique"`
 	ConfirmedEmail bool       `gorm:"default:false"`
