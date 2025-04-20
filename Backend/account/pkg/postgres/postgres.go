@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type PostgresInterface interface {
 	Login(email string, password string) (bool, string)
-	Signup(name string, email string, password string) (string, bool)
+	Signup(login string, name string, email string, password string) (string, bool)
 	ChangePassword(user *User, newPassword string) error
 	CreateUser(user *User) bool
 	UpdateUserPassword(user *User, newPassword string) error

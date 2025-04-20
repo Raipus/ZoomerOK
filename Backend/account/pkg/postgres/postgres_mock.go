@@ -13,8 +13,8 @@ func (m *MockPostgres) Login(email string, password string) (bool, string) {
 	return args.Bool(0), args.String(1)
 }
 
-func (m *MockPostgres) Signup(name string, email string, password string) (string, bool) {
-	args := m.Called(name, email, password)
+func (m *MockPostgres) Signup(login, name, email, password string) (string, bool) {
+	args := m.Called(login, name, email, password)
 	return args.String(0), args.Bool(1)
 }
 

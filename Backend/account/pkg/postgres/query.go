@@ -30,13 +30,14 @@ func (Instance *RealPostgres) Login(email string, password string) (bool, string
 }
 
 // TODO: написать валидацию данных
-func (Instance *RealPostgres) Signup(name string, email string, password string) (string, bool) {
+func (Instance *RealPostgres) Signup(login, name, email, password string) (string, bool) {
 	hashedPassword, err := security.HashPassword(password)
 	if err != nil {
 		return "", false
 	}
 
 	user := User{
+		Login:    login,
 		Name:     name,
 		Email:    email,
 		Password: hashedPassword,
