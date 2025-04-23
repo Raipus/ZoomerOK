@@ -8,7 +8,7 @@ import (
 
 type Post struct {
 	gorm.Model
-	Id     int `gorm:"type:id;primaryKey;not null"`
+	Id     int `gorm:"primaryKey;autoIncrement"`
 	UserId int
 	Text   string     `gorm:"not null"`
 	Image  []byte     `gorm:"type:bytea"`
@@ -17,16 +17,16 @@ type Post struct {
 
 type Comment struct {
 	gorm.Model
-	Id     int        `gorm:"primaryKey;not null"`
+	Id     int        `gorm:"primaryKey;autoIncrement"`
 	UserId int        `gorm:"not null"`
-	PostId int        `gorm:"not null"`
+	PostId int        `gorm:"not null;index"`
 	Text   string     `gorm:"not null"`
 	Time   *time.Time `gorm:"not null"`
 }
 
 type Like struct {
 	gorm.Model
-	Id     int `gorm:"primaryKey;not null"`
+	Id     int `gorm:"primaryKey;autoIncrement"`
 	UserId int
 	PostId int `gorm:"not null"`
 }

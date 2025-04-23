@@ -14,7 +14,8 @@ services:
     networks:
       - gateway_network
       - server_db
-      - server_redis
+    depends_on:
+      - db
 
   db:
     image: postgres
@@ -29,19 +30,6 @@ services:
     networks:
       - server_db
 
-  redis:
-    image: redis:6
-    restart: always
-    container_name: account_redis
-    env_file:
-      - ./pkg/config/envs/redis.env
-    volumes:
-      -
-    ports:
-      - 6379:6379
-    networks:
-      - server_redis
-
 volumes:
   data:
 
@@ -50,4 +38,3 @@ networks:
   gateway_network:
     external: true
   server_db:
-  server_redis:

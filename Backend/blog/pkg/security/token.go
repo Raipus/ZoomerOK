@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Raipus/ZoomerOK/account/pkg/config"
+	"github.com/Raipus/ZoomerOK/blog/pkg/config"
 	"github.com/dgrijalva/jwt-go"
 )
 

@@ -8,7 +8,7 @@ import (
 
 type User struct {
 	gorm.Model
-	Id             int        `gorm:"type:id;primaryKey;not null"`
+	Id             int        `gorm:"primaryKey;autoIncrement"`
 	Login          string     `gorm:"not null;size:30"`
 	Name           string     `gorm:"not null;size:30"`
 	Email          string     `gorm:"not null;size:30;unique"`
@@ -25,10 +25,10 @@ func CompareUsers(user1, user2 User) bool {
 }
 
 type Friend struct {
-	Id       string `gorm:"type:id;primaryKey"`
-	User1Id  int    `gorm:"not null;index;type:id"`
-	User2Id  int    `gorm:"not null;index;type:id"`
-	Accepted bool   `gorm:"not null"`
+	Id       int  `gorm:"primaryKey;autoIncrement"`
+	User1Id  int  `gorm:"not null;index"`
+	User2Id  int  `gorm:"not null;index"`
+	Accepted bool `gorm:"not null"`
 
 	User1 *User `gorm:"foreignKey:User1Id;references:Id"`
 	User2 *User `gorm:"foreignKey:User2Id;references:Id"`

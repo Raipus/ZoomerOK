@@ -2,6 +2,7 @@ package security
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"net/smtp"
 	"time"
@@ -25,6 +26,7 @@ type RealSMTP struct {
 
 func initSMTP() smtp.Auth {
 	if gin.Mode() == gin.ReleaseMode {
+		log.Println("Smtp initialized")
 		return smtp.PlainAuth(
 			"",
 			config.Config.SmtpUsername,

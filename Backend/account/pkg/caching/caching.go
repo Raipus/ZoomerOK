@@ -1,6 +1,7 @@
 package caching
 
 import (
+	"log"
 	"time"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/config"
@@ -27,6 +28,7 @@ type RealCache struct {
 
 // initCache - инициализация кэша
 func initCache() *cache.Cache {
+	log.Println("Caching initialized")
 	return cache.New(time.Duration(config.Config.TimeCache)*time.Second, time.Duration(config.Config.TimeCache)*time.Second)
 }
 

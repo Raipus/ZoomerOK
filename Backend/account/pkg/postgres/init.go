@@ -31,18 +31,6 @@ func Init() {
 	}
 
 	log.Println("Connected to Database!")
-
-	sqlDB, err := Instance.DB()
-	if err != nil {
-		log.Fatal("failed to get raw DB: ", err)
-	}
-
-	_, err = sqlDB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
-	if err != nil {
-		log.Fatal("failed to create extension: ", err)
-	}
-
-	log.Println("Расширение uuid-ossp успешно установлено")
 }
 
 func Migrate() {
@@ -60,7 +48,7 @@ func initPostgres() *gorm.DB {
 		Init()
 		Migrate()
 
-		if Instance != nil {
+		if Instance == nil {
 			panic("Database not initialized")
 		} else {
 			return Instance

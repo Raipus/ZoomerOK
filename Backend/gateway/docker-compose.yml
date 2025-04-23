@@ -10,13 +10,8 @@ services:
       - 1337:80
     networks:
       - gateway_network
-    volumes:
-      - frontend_static:/usr/share/nginx/html
 
 
 networks:
   gateway_network:
     external: true
-
-volumes:
-  frontend_static:

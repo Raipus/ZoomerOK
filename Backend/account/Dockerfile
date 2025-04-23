@@ -1,4 +1,4 @@
-FROM golang:1.23
+FROM golang:1.24
 WORKDIR /home/app/account
 
 ENV GO111MODULE=on

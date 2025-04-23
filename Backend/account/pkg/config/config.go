@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
 
@@ -126,6 +127,7 @@ func LoadConfig() (c *ConfigType) {
 
 	byteImage := getByteImage(c)
 	c.Photo.ByteImage = byteImage
+	gin.SetMode(gin.ReleaseMode)
 	return
 }
 
