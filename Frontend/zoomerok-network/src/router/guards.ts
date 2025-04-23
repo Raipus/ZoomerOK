@@ -15,6 +15,7 @@ export const authGuard = (to: any, from: any, next: any) => {
 
   interface JwtPayload {
     ConfirmEmail: boolean
+    // Другие поля
   }
 
   if (!token) {
