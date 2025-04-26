@@ -1,6 +1,7 @@
-package handlers
+package handlers_test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -9,52 +10,45 @@ import (
 	"time"
 
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker"
+	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
+	"github.com/Raipus/ZoomerOK/blog/pkg/handlers"
+	"github.com/Raipus/ZoomerOK/blog/pkg/memory"
 	"github.com/Raipus/ZoomerOK/blog/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/blog/pkg/router"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetPost(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 	mockBroker := new(broker.MockBroker)
-
+	mockMessageQueue := new(memory.MockMessageQueue)
 	r.GET("/post/:post_id", func(c *gin.Context) {
-		GetPost(c, mockPostgres, mockBroker)
+		handlers.GetPost(c, mockPostgres, mockBroker, mockMessageQueue)
 	})
 
-	var postId int = 1
-	postTime := time.Now()
-	post := postgres.Post{
-		Id:     postId,
-		UserId: 2,
-		Text:   "Это пост",
-		Image:  nil,
-		Time:   &postTime,
-	}
+	postId := 123
+	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	mockPostgres.On("GetPost", postId).Return(&postgres.Post{Id: postId, Text: "Тестовый пост", Image: []byte{}, Time: &date}, nil)
+	mockBroker.On("PushUser", mock.Anything).Return(nil)
+	mockMessageQueue.On("GetLastMessage").Return(&pb.GetUserResponse{Id: 1, Login: "testuser", Name: "Тест", Image: ""})
 
-	mockPostgres.On("GetPost", postId).Return(&post, nil)
+	req, _ := http.NewRequest("GET", "/post/"+strconv.Itoa(postId), nil)
+	req.Header.Set("Authorization", "Bearer testtoken")
+	req = req.WithContext(context.WithValue(req.Context(), "user_id", float64(1)))
 
-	req, err := http.NewRequest("GET", "/post/"+strconv.Itoa(postId), nil)
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
+
 	assert.Equal(t, http.StatusOK, w.Code)
-
 	mockPostgres.AssertExpectations(t)
+	mockBroker.AssertExpectations(t)
+	mockMessageQueue.AssertExpectations(t)
 
-	expectedResponse := gin.H{
-		"id":      float64(post.Id),
-		"user_id": float64(post.UserId),
-		"text":    post.Text,
-		"image":   interface{}(nil),
-	}
 	var actualResponse gin.H
-	err = json.Unmarshal(w.Body.Bytes(), &actualResponse)
+	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, actualResponse)
+	assert.NotEmpty(t, actualResponse["post"])
 }

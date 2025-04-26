@@ -1,11 +1,13 @@
-package handlers
+package handlers_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
 
+	"github.com/Raipus/ZoomerOK/blog/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/blog/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/blog/pkg/router"
 	"github.com/gin-gonic/gin"
@@ -13,24 +15,27 @@ import (
 )
 
 func TestDeletePost(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
+	userId := 1
+	r.Use(func(c *gin.Context) {
+		c.Set("user_id", float64(userId))
+		c.Next()
+	})
 	mockPostgres := new(postgres.MockPostgres)
-
 	r.DELETE("/post/:post_id", func(c *gin.Context) {
-		DeletePost(c, mockPostgres)
+		handlers.DeletePost(c, mockPostgres)
 	})
 
-	var postId int = 1
-	mockPostgres.On("DeletePost", 1, postId).Return(nil)
+	postId := 456
+	mockPostgres.On("DeletePost", userId, postId).Return(nil)
 
-	req, err := http.NewRequest("DELETE", "/post/"+strconv.Itoa(postId), nil)
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
+	req, _ := http.NewRequest("DELETE", "/post/"+strconv.Itoa(postId), nil)
+	req.Header.Set("Authorization", "Bearer testtoken")
+	req = req.WithContext(context.WithValue(req.Context(), "user_id", float64(userId)))
+
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 
+	assert.Equal(t, http.StatusNoContent, w.Code)
 	mockPostgres.AssertExpectations(t)
 }

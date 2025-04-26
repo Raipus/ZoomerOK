@@ -10,32 +10,34 @@ import (
 	"github.com/Raipus/ZoomerOK/account/pkg/security"
 )
 
-func (Instance *RealPostgres) Login(loginOrEmail string, password string) (string, string) {
+func (Instance *RealPostgres) Login(loginOrEmail string, password string) (User, string, string) {
 	var user User
 
 	resultByEmail := Instance.instance.Where(&User{Email: loginOrEmail}).First(&user)
 	if resultByEmail.Error == nil {
 		if !security.CheckPasswordHash(password, user.Password) {
-			return "", "Неверный пароль"
+			return User{}, "", "Неверный пароль"
 		}
-		return generateToken(user)
+		token, strError := generateToken(user)
+		return user, token, strError
 	}
 
 	resultByLogin := Instance.instance.Where(&User{Login: loginOrEmail}).First(&user)
 	if resultByLogin.Error == nil {
 		if !security.CheckPasswordHash(password, user.Password) {
-			return "", "Неверный пароль"
+			return User{}, "", "Неверный пароль"
 		}
-		return generateToken(user)
+		token, strError := generateToken(user)
+		return user, token, strError
 	}
 
-	return "", "Неверный login или email"
+	return User{}, "", "Неверный login или email"
 }
 
 func generateToken(user User) (string, string) {
 	userToken := security.UserToken{
-		Id:    user.Id,
-		Name:  user.Name,
+		Id:    float64(user.Id),
+		Login: user.Login,
 		Email: user.Email,
 	}
 
@@ -48,10 +50,10 @@ func generateToken(user User) (string, string) {
 }
 
 // TODO: написать валидацию данных
-func (Instance *RealPostgres) Signup(login, name, email, password string) (string, bool) {
+func (Instance *RealPostgres) Signup(login, name, email, password string) (User, string, bool) {
 	hashedPassword, err := security.HashPassword(password)
 	if err != nil {
-		return "", false
+		return User{}, "", false
 	}
 
 	user := User{
@@ -64,25 +66,22 @@ func (Instance *RealPostgres) Signup(login, name, email, password string) (strin
 		Image:    config.Config.Photo.ByteImage,
 	}
 
-	// resizedImage, err := security.ResizeImage(config.Config.Photo.ByteImage)
-
 	if err != nil {
-		return "", false
+		return User{}, "", false
 	}
 
-	// encodedImage := base64.StdEncoding.EncodeToString([]byte(resizedImage))
 	userToken := security.UserToken{
-		Id:    user.Id,
-		Name:  user.Name,
+		Id:    float64(user.Id),
+		Login: user.Login,
 		Email: user.Email,
 	}
 
 	token, err := security.GenerateJWT(userToken)
 	if err != nil {
-		return "", false
+		return User{}, "", false
 	}
 
-	return token, Instance.CreateUser(&user)
+	return user, token, Instance.CreateUser(&user)
 }
 
 // TODO: написать валидацию данных

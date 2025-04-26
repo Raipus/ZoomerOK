@@ -3,8 +3,10 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
 
@@ -19,16 +21,18 @@ type ConfigType struct {
 	HttpPort            int    `mapstructure:"HTTP_PORT"`
 	Prefix              string `mapstructure:"PREFIX"`
 	SecretKey           string `mapstructure:"SECRET_KEY"`
+	PageSize            int    `mapstructure:"PAGE_SIZE"`
 	TimeCache           int    `mapstructure:"TIME_CACHE"`
 	ConfirmationCache   string `mapstructure:"CONFIRMATION_CACHE"`
 	ResetCache          string `mapstructure:"RESET_CACHE"`
 	GenerateLinkLength  int    `mapstructure:"GENERATE_LINK_LENGTH"`
 	GenerateLinkCharset string `mapstructure:"GENERATE_LINK_CHARSET"`
 
-	KafkaAccountBlogTopic string `mapstructure:"KAFKA_ACCOUNT_BLOG_TOPIC"`
-	KafkaBrokerHost       string `mapstructure:"KAFKA_BROKER_HOST"`
-	KafkaBrokerPort       int    `mapstructure:"KAFKA_BROKER_PORT"`
-	KafkaBrokerUrl        string
+	KafkaReaderTopic string `mapstructure:"KAFKA_READER_TOPIC"`
+	KafkaWriterTopic string `mapstructure:"KAFKA_WRITER_TOPIC"`
+	KafkaBrokerHost  string `mapstructure:"KAFKA_BROKER_HOST"`
+	KafkaBrokerPort  int    `mapstructure:"KAFKA_BROKER_PORT"`
+	KafkaBrokerUrl   string
 }
 
 func LoadConfig() (c *ConfigType) {
@@ -36,6 +40,7 @@ func LoadConfig() (c *ConfigType) {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	if !strings.HasSuffix(os.Args[0], ".test") {
+		gin.SetMode(gin.ReleaseMode)
 		viper.AddConfigPath("./pkg/config/envs")
 
 		viper.SetConfigName("prod")
@@ -48,6 +53,7 @@ func LoadConfig() (c *ConfigType) {
 			fmt.Printf("Ошибка при объединении файла prod.db.env: %s\n", err)
 		}
 	} else {
+		gin.SetMode(gin.TestMode)
 		viper.AddConfigPath("../config/envs")
 		viper.SetConfigName("test")
 		if err := viper.ReadInConfig(); err != nil {
@@ -66,7 +72,7 @@ func LoadConfig() (c *ConfigType) {
 		panic(fmt.Errorf("невозможно декодировать в структуру: %w", err))
 	}
 
-	c.KafkaBrokerUrl = c.KafkaBrokerHost + ":" + string(c.KafkaBrokerPort)
+	c.KafkaBrokerUrl = c.KafkaBrokerHost + ":" + strconv.Itoa(c.KafkaBrokerPort)
 	fmt.Println("Viper config dump:")
 	allSettings := viper.AllSettings()
 	for key, value := range allSettings {

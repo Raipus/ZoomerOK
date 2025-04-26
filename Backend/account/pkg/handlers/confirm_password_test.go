@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"net/http"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
+	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -13,7 +14,6 @@ import (
 
 func TestConfirmPasswordWithLogin(t *testing.T) {
 	// Устанавливаем режим тестирования для Gin
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 
 	// Создаем mock для кэширования
@@ -27,16 +27,16 @@ func TestConfirmPasswordWithLogin(t *testing.T) {
 	mockCache.On("GetCacheResetLink", resetLink).Return(login)
 
 	// Регистрируем обработчик с использованием mockCache
-	r.GET("/confirm_password/:reset_link", func(c *gin.Context) {
-		ConfirmPassword(c, mockCache)
+	r.PUT("/confirm_password/:reset_link", func(c *gin.Context) {
+		handlers.ConfirmPassword(c, mockCache)
 	})
 
 	// Создаем тестовый запрос
-	req, _ := http.NewRequest(http.MethodGet, "/confirm_password/"+resetLink, nil)
+	req, _ := http.NewRequest(http.MethodPut, "/confirm_password/"+resetLink, nil)
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusNoContent, w.Code)
 	mockCache.AssertExpectations(t)
 }
 
@@ -53,7 +53,7 @@ func TestConfirmPasswordWithoutLogin(t *testing.T) {
 
 	// Регистрируем обработчик с использованием mockCache
 	r.GET("/confirm_password/:reset_link", func(c *gin.Context) {
-		ConfirmPassword(c, mockCache)
+		handlers.ConfirmPassword(c, mockCache)
 	})
 
 	// Создаем тестовый запрос

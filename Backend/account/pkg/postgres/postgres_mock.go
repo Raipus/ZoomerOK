@@ -8,14 +8,14 @@ type MockPostgres struct {
 	mock.Mock
 }
 
-func (m *MockPostgres) Login(loginOrEmail string, password string) (string, string) {
+func (m *MockPostgres) Login(loginOrEmail string, password string) (User, string, string) {
 	args := m.Called(loginOrEmail, password)
-	return args.String(0), args.String(1)
+	return args.Get(0).(User), args.String(1), args.String(2)
 }
 
-func (m *MockPostgres) Signup(login, name, email, password string) (string, bool) {
+func (m *MockPostgres) Signup(login, name, email, password string) (User, string, bool) {
 	args := m.Called(login, name, email, password)
-	return args.String(0), args.Bool(1)
+	return args.Get(0).(User), args.String(1), args.Bool(2)
 }
 
 func (m *MockPostgres) ChangePassword(user *User, newPassword string) error {
@@ -38,9 +38,9 @@ func (m *MockPostgres) ChangeUser(user *User) bool {
 	return args.Bool(0)
 }
 
-func (m *MockPostgres) ConfirmEmail(login string) bool {
+func (m *MockPostgres) ConfirmEmail(login string) (User, bool) {
 	args := m.Called(login)
-	return args.Bool(0)
+	return args.Get(0).(User), args.Bool(1)
 }
 
 func (m *MockPostgres) GetUserById(id int) User {

@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
+	"github.com/Raipus/ZoomerOK/account/pkg/memory"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/gin-gonic/gin"
@@ -14,34 +16,36 @@ import (
 )
 
 func TestDeleteFriend(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
+	mockRedis := new(memory.MockRedis)
 
-	deleteFriendData := DeleteFriendForm{
+	deleteFriendData := handlers.DeleteFriendForm{
 		UserId:       1,
 		FriendUserId: 2,
 	}
 
 	mockPostgres.On("DeleteFriendRequest", deleteFriendData.UserId, deleteFriendData.FriendUserId).Return(nil)
+	mockRedis.On("DeleteUserFriend", deleteFriendData.UserId, deleteFriendData.FriendUserId).Return(nil)
 
 	jsonData, err := json.Marshal(deleteFriendData)
 	if err != nil {
 		t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
 	}
 
-	r.PUT("/delete_friend", func(c *gin.Context) {
-		DeleteFriend(c, mockPostgres)
+	r.DELETE("/delete_friend", func(c *gin.Context) {
+		handlers.DeleteFriend(c, mockPostgres, mockRedis)
 	})
 
-	req, err := http.NewRequest(http.MethodPut, "/delete_friend", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodDelete, "/delete_friend", bytes.NewBuffer(jsonData))
 	if err != nil {
 		t.Fatalf("Ошибка при создании запроса: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusNoContent, w.Code)
 
 	mockPostgres.AssertExpectations(t)
+	mockRedis.AssertExpectations(t)
 }

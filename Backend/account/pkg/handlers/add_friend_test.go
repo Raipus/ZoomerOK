@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/gin-gonic/gin"
@@ -14,11 +15,10 @@ import (
 )
 
 func TestAddFriend(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 
-	acceptFriendData := AddFriendForm{
+	acceptFriendData := handlers.AddFriendForm{
 		UserId:       1,
 		FriendUserId: 2,
 	}
@@ -31,7 +31,7 @@ func TestAddFriend(t *testing.T) {
 	}
 
 	r.POST("/add_friend", func(c *gin.Context) {
-		AddFriend(c, mockPostgres)
+		handlers.AddFriend(c, mockPostgres)
 	})
 
 	req, err := http.NewRequest(http.MethodPost, "/add_friend", bytes.NewBuffer(jsonData))
@@ -41,7 +41,7 @@ func TestAddFriend(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusNoContent, w.Code)
 
 	mockPostgres.AssertExpectations(t)
 }

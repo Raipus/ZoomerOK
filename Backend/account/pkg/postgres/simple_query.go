@@ -28,34 +28,34 @@ func (Instance *RealPostgres) UpdateUserPassword(user *User, newPassword string)
 
 func (Instance *RealPostgres) GetUserById(id int) User {
 	var user User
-	Instance.instance.Model(&User{Id: id}).First(&user)
+	Instance.instance.Where("id = ?", id).First(&user)
 	return user
 }
 
 func (Instance *RealPostgres) GetUserByEmail(email string) User {
 	var user User
-	Instance.instance.Model(&User{Email: email}).First(&user)
+	Instance.instance.Where("email = ?", email).First(&user)
 	return user
 }
 
 func (Instance *RealPostgres) GetUserByLogin(login string) User {
 	var user User
-	Instance.instance.Model(&User{Login: login}).First(&user)
+	Instance.instance.Where("login = ?", login).First(&user)
 	return user
 }
 
-func (Instance *RealPostgres) ConfirmEmail(login string) bool {
+func (Instance *RealPostgres) ConfirmEmail(login string) (User, bool) {
 	user := Instance.GetUserByLogin(login)
-	if user.Login != "" {
-		return false
+	if user.Login == "" {
+		return user, false
 	}
 
 	user.ConfirmedEmail = true
 	result := Instance.instance.Save(user)
 	if result.Error != nil {
-		return false
+		return user, false
 	}
-	return true
+	return user, true
 }
 
 func (Instance *RealPostgres) DeleteUser(user *User) {

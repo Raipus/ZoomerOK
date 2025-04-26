@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
+	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/Raipus/ZoomerOK/account/pkg/security"
@@ -23,7 +24,7 @@ func TestWantChangePassword(t *testing.T) {
 	mockPostgres := new(postgres.MockPostgres)
 	mockCache := new(caching.MockCache)
 
-	wantChangePasswordData := WantChangePasswordForm{
+	wantChangePasswordData := handlers.WantChangePasswordForm{
 		Email: "test@example.com",
 	}
 
@@ -44,7 +45,7 @@ func TestWantChangePassword(t *testing.T) {
 	mockPostgres.On("GetUserByEmail", wantChangePasswordData.Email).Return(user)
 	mockSmtp.On("SendChangePassword", user.Name, user.Email, mockCache).Return(nil)
 	r.POST("/want_change_password", func(c *gin.Context) {
-		WantChangePassword(c, mockPostgres, mockSmtp, mockCache)
+		handlers.WantChangePassword(c, mockPostgres, mockSmtp, mockCache)
 	})
 
 	jsonData, err := json.Marshal(wantChangePasswordData)

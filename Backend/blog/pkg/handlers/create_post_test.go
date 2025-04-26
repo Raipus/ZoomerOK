@@ -1,12 +1,14 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Raipus/ZoomerOK/blog/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/blog/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/blog/pkg/router"
 	"github.com/gin-gonic/gin"
@@ -14,35 +16,35 @@ import (
 )
 
 func TestCreatePost(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
+	userId := 1
+	r.Use(func(c *gin.Context) {
+		c.Set("user_id", float64(1))
+		c.Next()
+	})
 	mockPostgres := new(postgres.MockPostgres)
-
-	createCommentData := CreatePostForm{
-		PostId: 1,
-		Text:   "Новый комментарий",
-		Photo:  nil,
-	}
-
 	r.POST("/create_post", func(c *gin.Context) {
-		CreatePost(c, mockPostgres)
+		handlers.CreatePost(c, mockPostgres)
 	})
 
-	mockPostgres.On("CreatePost", 1, createCommentData.Text, createCommentData.Photo).Return(nil)
+	postText := "Это тестовый пост"
+	mockPostgres.On("CreatePost", userId, postText, []byte(nil)).Return(1, nil)
 
-	jsonData, err := json.Marshal(createCommentData)
-	if err != nil {
-		t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
-	}
+	jsonData := gin.H{"text": postText}
+	jsonValue, _ := json.Marshal(jsonData)
 
-	req, err := http.NewRequest("POST", "/create_post", bytes.NewBuffer(jsonData))
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
+	req, _ := http.NewRequest("POST", "/create_post", bytes.NewReader(jsonValue))
+	req.Header.Set("Authorization", "Bearer testtoken")
+	req = req.WithContext(context.WithValue(req.Context(), "user_id", float64(userId)))
+
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusCreated, w.Code)
 
+	assert.Equal(t, http.StatusCreated, w.Code)
 	mockPostgres.AssertExpectations(t)
+
+	var actualResponse gin.H
+	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)
+	assert.NoError(t, err)
+	assert.Equal(t, float64(1), actualResponse["id"])
 }

@@ -51,6 +51,7 @@ func initPostgres() *gorm.DB {
 		if Instance == nil {
 			panic("Database not initialized")
 		} else {
+			log.Println("Database initialized")
 			return Instance
 		}
 	} else {

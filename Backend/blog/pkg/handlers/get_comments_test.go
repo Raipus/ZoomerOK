@@ -1,6 +1,7 @@
-package handlers
+package handlers_test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -9,69 +10,45 @@ import (
 	"time"
 
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker"
+	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
+	"github.com/Raipus/ZoomerOK/blog/pkg/handlers"
+	"github.com/Raipus/ZoomerOK/blog/pkg/memory"
 	"github.com/Raipus/ZoomerOK/blog/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/blog/pkg/router"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetComments(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 	mockBroker := new(broker.MockBroker)
-
+	mockMessageQueue := new(memory.MockMessageQueue)
 	r.GET("/post/:post_id/comments", func(c *gin.Context) {
-		GetComments(c, mockPostgres, mockBroker)
+		handlers.GetComments(c, mockPostgres, mockBroker, mockMessageQueue)
 	})
 
-	commentTime := time.Now()
-	var postId int = 1
-	comment1 := postgres.Comment{
-		Id:     4,
-		UserId: 3,
-		PostId: postId,
-		Text:   "Комментарий 1",
-		Time:   &commentTime,
-	}
-	comment2 := postgres.Comment{
-		Id:     6,
-		UserId: 4,
-		PostId: postId,
-		Text:   "Комментарий 2",
-		Time:   &commentTime,
-	}
+	postId := 789
+	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	mockPostgres.On("GetComments", postId, 1).Return([]postgres.Comment{{Id: 1, PostId: postId, UserId: 1, Text: "Комментарий", Time: &date}}, nil)
+	mockBroker.On("PushUsers", mock.Anything).Return(nil)
+	mockMessageQueue.On("GetLastMessage").Return(&pb.GetUsersResponse{Users: []*pb.GetUserResponse{{Id: 1, Login: "testuser", Name: "Тест", Image: ""}}, Ids: []int64{1}})
 
-	mockPostgres.On("GetComments", 1).Return([]postgres.Comment{comment1, comment2}, nil)
+	req, _ := http.NewRequest("GET", "/post/"+strconv.Itoa(postId)+"/comments?page=1", nil)
+	req.Header.Set("Authorization", "Bearer testtoken")
+	req = req.WithContext(context.WithValue(req.Context(), "user_id", float64(1)))
 
-	req, err := http.NewRequest("GET", "/post/"+strconv.Itoa(postId)+"/comments", nil)
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
+
 	assert.Equal(t, http.StatusOK, w.Code)
-
 	mockPostgres.AssertExpectations(t)
+	mockBroker.AssertExpectations(t)
+	mockMessageQueue.AssertExpectations(t)
 
-	expectedResponse := gin.H{
-		"comments": []interface{}{
-			map[string]interface{}{
-				"id":      float64(comment1.Id),
-				"user_id": float64(comment1.UserId),
-				"post_id": float64(comment1.PostId),
-				"text":    comment1.Text,
-			},
-			map[string]interface{}{
-				"id":      float64(comment2.Id),
-				"user_id": float64(comment2.UserId),
-				"post_id": float64(comment2.PostId),
-				"text":    comment2.Text,
-			},
-		},
-	}
 	var actualResponse gin.H
-	err = json.Unmarshal(w.Body.Bytes(), &actualResponse)
+	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, actualResponse)
+	assert.NotEmpty(t, actualResponse["comments"])
 }

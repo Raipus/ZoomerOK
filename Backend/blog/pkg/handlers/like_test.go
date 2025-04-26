@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"net/http"
@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Raipus/ZoomerOK/blog/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/blog/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/blog/pkg/router"
 	"github.com/gin-gonic/gin"
@@ -13,24 +14,26 @@ import (
 )
 
 func TestLike(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
-	mockPostgres := new(postgres.MockPostgres)
 
-	r.DELETE("/post/:post_id/like", func(c *gin.Context) {
-		Like(c, mockPostgres)
+	r.Use(func(c *gin.Context) {
+		c.Set("user_id", float64(1))
+		c.Next()
+	})
+	mockPostgres := new(postgres.MockPostgres)
+	r.POST("/post/:post_id/like", func(c *gin.Context) {
+		handlers.Like(c, mockPostgres)
 	})
 
-	var postId int = 1
+	postId := 456
 	mockPostgres.On("Like", 1, postId).Return(nil)
 
-	req, err := http.NewRequest("DELETE", "/post/"+strconv.Itoa(postId)+"/like", nil)
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
+	req, _ := http.NewRequest("POST", "/post/"+strconv.Itoa(postId)+"/like", nil)
+	req.Header.Set("Authorization", "Bearer testtoken")
+
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
 
+	assert.Equal(t, http.StatusNoContent, w.Code)
 	mockPostgres.AssertExpectations(t)
 }

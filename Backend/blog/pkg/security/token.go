@@ -9,10 +9,9 @@ import (
 )
 
 type UserToken struct {
-	Id    int    `json:"id"`
-	Login string `json:"login"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Id    float64 `json:"id"`
+	Login string  `json:"login"`
+	Email string  `json:"email"`
 }
 
 var secretKey = []byte(config.Config.SecretKey)
@@ -21,9 +20,8 @@ func GenerateJWT(user UserToken) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
-	claims["id"] = user.Id
+	claims["id"] = float64(user.Id)
 	claims["login"] = user.Login
-	claims["name"] = user.Name
 	claims["email"] = user.Email
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix() // Токен действителен 72 часа
 

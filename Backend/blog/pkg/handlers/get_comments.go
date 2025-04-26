@@ -1,15 +1,33 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker"
+	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
+	"github.com/Raipus/ZoomerOK/blog/pkg/memory"
 	"github.com/Raipus/ZoomerOK/blog/pkg/postgres"
 	"github.com/gin-gonic/gin"
 )
 
-func GetComments(c *gin.Context, db postgres.PostgresInterface, broker broker.BrokerInterface) {
+// GetComments отправляет запрос на получение комментариев для конкретного поста.
+// @Summary Отправить запрос на получение комментариев.
+// @Description Позволяет пользователю отправить запрос для получения комментариев для конкретного поста.
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer {token}"
+// @Success 200 {object} gin.H {"message": "Success", "comments": []gin.H{"user": {"id": 0, "login": "", "name": "", "image": ""}, "body": {"id": 0, "post_id": 0, "text": "", "time": ""}}}
+// @Failure 400 {object} gin.H {"error": "Некорректный формат данных"}
+// @Failure 404 {object} gin.H {"error": "Пост не найден"}
+// @Failure 500 {object} gin.H {"error": "Ошибка сервиса"}
+// @Router /post/:post_id/comments [get]
+func GetComments(c *gin.Context, db postgres.PostgresInterface, broker broker.BrokerInterface, messageQueue memory.MessageQueue) {
+	page, err := strconv.Atoi(c.Query("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
 	postIdStr := c.Param("post_id")
 
 	postId, err := strconv.Atoi(postIdStr)
@@ -18,19 +36,70 @@ func GetComments(c *gin.Context, db postgres.PostgresInterface, broker broker.Br
 		return
 	}
 
-	comments, err := db.GetComments(postId)
+	comments, err := db.GetComments(postId, page)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Пост не найден"})
 		return
 	}
 
+	userIds := make(map[int64]bool)
+	for _, comment := range comments {
+		userIds[int64(comment.UserId)] = true
+	}
+
+	ids := make([]int64, 0, len(userIds))
+	for userId := range userIds {
+		ids = append(ids, userId)
+	}
+
+	getUsersRequest := &pb.GetUsersRequest{
+		Ids: ids,
+	}
+	if err := broker.PushUsers(getUsersRequest); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
+		return
+	}
+
+	message := messageQueue.GetLastMessage()
+
+	getUsersResponse, ok := message.(*pb.GetUsersResponse)
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
+		log.Println("Invalid response from message queue")
+		return
+	}
+
+	if len(getUsersResponse.Ids) == 0 {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Invalid response"})
+		log.Println("Empty response from message queue")
+		return
+	}
+
+	userMap := make(map[int]*pb.GetUserResponse)
+	for _, user := range getUsersResponse.Users {
+		userMap[int(user.Id)] = user
+	}
+
 	var responseComments []gin.H
 	for _, comment := range comments {
+		user, exists := userMap[comment.UserId]
+		if !exists {
+			continue
+		}
+
 		responseComments = append(responseComments, gin.H{
-			"id":      float64(comment.Id),
-			"user_id": float64(comment.UserId),
-			"post_id": float64(comment.PostId),
-			"text":    comment.Text,
+			"user": gin.H{
+				"id":    float64(user.Id),
+				"login": user.Login,
+				"name":  user.Name,
+				"image": user.Image,
+			},
+			"body": gin.H{
+				"id":      float64(comment.Id),
+				"post_id": float64(comment.PostId),
+				"text":    comment.Text,
+				"time":    comment.Time,
+			},
 		})
 	}
 

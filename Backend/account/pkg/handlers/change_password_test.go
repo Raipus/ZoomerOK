@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
+	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/gin-gonic/gin"
@@ -16,12 +17,11 @@ import (
 )
 
 func TestChangePassword(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 	mockCache := new(caching.MockCache)
 
-	changePasswordData := ChangePasswordForm{
+	changePasswordData := handlers.ChangePasswordForm{
 		Email:       "test@example.com",
 		NewPassword: "newsecurepassword",
 	}
@@ -50,7 +50,7 @@ func TestChangePassword(t *testing.T) {
 	}
 
 	r.PUT("/change_password/:reset_link", func(c *gin.Context) {
-		ChangePassword(c, mockPostgres, mockCache)
+		handlers.ChangePassword(c, mockPostgres, mockCache)
 	})
 
 	req, err := http.NewRequest("PUT", "/change_password/"+resetLink, bytes.NewBuffer(jsonData))
@@ -60,7 +60,7 @@ func TestChangePassword(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusNoContent, w.Code)
 
 	mockPostgres.AssertExpectations(t)
 	mockCache.AssertExpectations(t)

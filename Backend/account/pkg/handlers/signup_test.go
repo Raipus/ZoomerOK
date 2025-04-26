@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -6,8 +6,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/caching"
+	"github.com/Raipus/ZoomerOK/account/pkg/config"
+	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
+	"github.com/Raipus/ZoomerOK/account/pkg/memory"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/Raipus/ZoomerOK/account/pkg/security"
@@ -21,19 +25,49 @@ func TestSignup(t *testing.T) {
 	mockSmtp := new(security.MockSmtp)
 	mockPostgres := new(postgres.MockPostgres)
 	mockCache := new(caching.MockCache)
+	mockRedis := new(memory.MockRedis)
 
-	signupData := SignupForm{
+	signupData := handlers.SignupForm{
 		Login:    "testuser",
 		Name:     "Test User",
 		Email:    "test@example.com",
 		Password: "securepassword",
 	}
 
+	birthday := time.Now()
+	byteImage := config.Config.Photo.ByteImage
 	var token string = "new-token"
+	user := postgres.User{
+		Id:             1,
+		Login:          "testuser",
+		Name:           "Тестовый Пользователь",
+		Email:          "testuser@example.com",
+		ConfirmedEmail: true,
+		Password:       "securepassword",
+		Birthday:       &birthday,
+		Phone:          "123-456-7890",
+		City:           "Москва",
+		Image:          byteImage,
+	}
+	redisAuthorization := memory.RedisAuthorization{
+		UserId: user.Id,
+		Token:  token,
+		Login:  user.Login,
+		Email:  user.Email,
+	}
+	redisUser := memory.RedisUser{
+		UserId: user.Id,
+		Login:  user.Login,
+		Name:   user.Name,
+		Image:  config.Config.Photo.Base64Small,
+	}
+
 	mockSmtp.On("SendConfirmEmail", signupData.Name, signupData.Email, mockCache).Return(nil)
 	mockPostgres.On("GetUserByLogin", signupData.Login).Return(postgres.User{})
 	mockPostgres.On("GetUserByEmail", signupData.Email).Return(postgres.User{})
-	mockPostgres.On("Signup", signupData.Login, signupData.Name, signupData.Email, signupData.Password).Return(token, true)
+	mockPostgres.On("Signup", signupData.Login, signupData.Name, signupData.Email, signupData.Password).Return(user, token, true)
+	mockRedis.On("SetAuthorization", redisAuthorization).Return()
+	mockRedis.On("SetUser", redisUser).Return()
 
 	jsonData, err := json.Marshal(signupData)
 	if err != nil {
@@ -41,7 +75,7 @@ func TestSignup(t *testing.T) {
 	}
 
 	r.POST("/signup", func(c *gin.Context) {
-		Signup(c, mockPostgres, mockSmtp, mockCache)
+		handlers.Signup(c, mockPostgres, mockSmtp, mockCache, mockRedis)
 	})
 
 	req, err := http.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer(jsonData))
@@ -71,8 +105,9 @@ func TestSignupLoginExists(t *testing.T) {
 	mockSmtp := new(security.MockSmtp)
 	mockPostgres := new(postgres.MockPostgres)
 	mockCache := new(caching.MockCache)
+	mockRedis := new(memory.MockRedis)
 
-	signupData := SignupForm{
+	signupData := handlers.SignupForm{
 		Login:    "existinguser",
 		Name:     "Test User",
 		Email:    "test@example.com",
@@ -88,7 +123,7 @@ func TestSignupLoginExists(t *testing.T) {
 	}
 
 	r.POST("/signup", func(c *gin.Context) {
-		Signup(c, mockPostgres, mockSmtp, mockCache)
+		handlers.Signup(c, mockPostgres, mockSmtp, mockCache, mockRedis)
 	})
 
 	req, err := http.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer(jsonData))
@@ -107,6 +142,7 @@ func TestSignupLoginExists(t *testing.T) {
 	assert.Equal(t, expectedResponse, actualResponse)
 
 	mockPostgres.AssertExpectations(t)
+	mockRedis.AssertExpectations(t)
 }
 
 func TestSignupEmailExists(t *testing.T) {
@@ -115,8 +151,9 @@ func TestSignupEmailExists(t *testing.T) {
 	mockSmtp := new(security.MockSmtp)
 	mockPostgres := new(postgres.MockPostgres)
 	mockCache := new(caching.MockCache)
+	mockRedis := new(memory.MockRedis)
 
-	signupData := SignupForm{
+	signupData := handlers.SignupForm{
 		Login:    "newuser",
 		Name:     "Test User",
 		Email:    "existing@example.com",
@@ -133,7 +170,7 @@ func TestSignupEmailExists(t *testing.T) {
 	}
 
 	r.POST("/signup", func(c *gin.Context) {
-		Signup(c, mockPostgres, mockSmtp, mockCache)
+		handlers.Signup(c, mockPostgres, mockSmtp, mockCache, mockRedis)
 	})
 
 	req, err := http.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer(jsonData))
@@ -152,4 +189,5 @@ func TestSignupEmailExists(t *testing.T) {
 	assert.Equal(t, expectedResponse, actualResponse)
 
 	mockPostgres.AssertExpectations(t)
+	mockRedis.AssertExpectations(t)
 }

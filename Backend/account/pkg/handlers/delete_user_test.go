@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"net/http"
@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
+	"github.com/Raipus/ZoomerOK/account/pkg/memory"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/gin-gonic/gin"
@@ -15,7 +17,13 @@ import (
 func TestDeleteUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
+	var token string = "my_token"
+	r.Use(func(c *gin.Context) {
+		c.Set("token", token)
+		c.Next()
+	})
 	mockPostgres := new(postgres.MockPostgres)
+	mockRedis := new(memory.MockRedis)
 
 	var login string = "testuser"
 	birthday := time.Now()
@@ -32,12 +40,15 @@ func TestDeleteUser(t *testing.T) {
 		Image:          nil,
 	}
 
-	r.DELETE("/user/:login", func(c *gin.Context) {
-		DeleteUser(c, mockPostgres)
-	})
-
 	mockPostgres.On("GetUserByLogin", login).Return(user)
 	mockPostgres.On("DeleteUser", &user).Return()
+	mockRedis.On("DeleteAuthorization", token).Return()
+	mockRedis.On("DeleteUser", user.Id).Return()
+	mockRedis.On("DeleteAllUserFriend", user.Id).Return()
+
+	r.DELETE("/user/:login", func(c *gin.Context) {
+		handlers.DeleteUser(c, mockPostgres, mockRedis)
+	})
 
 	req, err := http.NewRequest("DELETE", "/user/"+login, nil)
 	if err != nil {
@@ -45,5 +56,5 @@ func TestDeleteUser(t *testing.T) {
 	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusNoContent, w.Code)
 }

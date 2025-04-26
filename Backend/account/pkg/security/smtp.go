@@ -13,8 +13,8 @@ import (
 )
 
 type SMTPInterface interface {
-	SendConfirmEmail(username, email string, cache caching.CachingInterface) error
-	SendChangePassword(username, email string, cache caching.CachingInterface) error
+	SendConfirmEmail(login, email string, cache caching.CachingInterface) error
+	SendChangePassword(login, email string, cache caching.CachingInterface) error
 	SendEmail(email string, message []byte) error
 }
 
@@ -38,29 +38,36 @@ func initSMTP() smtp.Auth {
 	}
 }
 
-func (Smtp *RealSMTP) SendConfirmEmail(username, email string, cache caching.CachingInterface) error {
-	var confirmationLink string = GenerateLink()
-	confirmEmailMessage := []byte(fmt.Sprintf(
+func (Smtp *RealSMTP) SendConfirmEmail(login, email string, cache caching.CachingInterface) error {
+	code := GenerateLink()
+	// var confirmationLink string = config.Config.FrontendLink + "/confirm_email/" + code
+	/*confirmEmailMessage := []byte(fmt.Sprintf(
 		"Здравствуйте, %s!\n\n"+
 			"Спасибо за регистрацию на нашем сайте. Чтобы активировать вашу учетную запись, пожалуйста, подтвердите свой адрес электронной почты, перейдя по следующей ссылке:\n\n"+
 			"%s\n\n"+
 			"Если вы не регистрировались на нашем сайте, просто проигнорируйте это сообщение.\n\n"+
 			"С уважением,\n"+
 			"ZoomerOk",
-		username, confirmationLink,
-	))
-	cache.SetCacheConfirmationLink(username, confirmationLink)
+		login, confirmationLink,
+	))*/
+	cache.SetCacheConfirmationLink(login, code)
+	log.Println("code:", code)
 
-	var subject string = "Подтверждение электронной почты ZoomerOk"
+	return fmt.Errorf("ewr")
+	/*var subject string = "Подтверждение электронной почты ZoomerOk"
 	headers := []byte("From: " + config.Config.SmtpUsername + "\n" +
 		"To: " + email + "\n" +
-		"Subject: " + subject + "\n\n")
+		"Subject: " + subject + "\n" +
+		"MIME-Version: 1.0\n" +
+		"Content-Type: text/plain; charset=\"UTF-8\"\n" +
+		"\n")
 	message := append(headers, confirmEmailMessage...)
-	return Smtp.SendEmail(email, message)
+	return Smtp.SendEmail(email, message)*/
 }
 
-func (Smtp *RealSMTP) SendChangePassword(username, email string, cache caching.CachingInterface) error {
-	var resetLink string = GenerateLink()
+func (Smtp *RealSMTP) SendChangePassword(login, email string, cache caching.CachingInterface) error {
+	code := GenerateLink()
+	var resetLink string = config.Config.FrontendLink + "/confirm_password/" + code
 
 	changePasswordMessage := []byte(fmt.Sprintf(
 		"Здравствуйте, %s!\n\n"+
@@ -69,14 +76,18 @@ func (Smtp *RealSMTP) SendChangePassword(username, email string, cache caching.C
 			"Если вы не запрашивали сброс пароля, просто проигнорируйте это сообщение.\n\n"+
 			"С уважением,\n"+
 			"ZoomerOk",
-		username, resetLink,
+		login, resetLink,
 	))
-	cache.SetCacheResetLink(username, resetLink)
+	cache.SetCacheResetLink(login, code)
+	log.Println(code)
 
 	var subject string = "Подтверждение смены пароля ZoomerOk"
 	headers := []byte("From: " + config.Config.SmtpUsername + "\n" +
 		"To: " + email + "\n" +
-		"Subject: " + subject + "\n\n")
+		"Subject: " + subject + "\n" +
+		"MIME-Version: 1.0\n" +
+		"Content-Type: text/plain; charset=\"UTF-8\"\n" +
+		"\n")
 	message := append(headers, changePasswordMessage...)
 	return Smtp.SendEmail(email, message)
 }

@@ -10,8 +10,30 @@ message GetUserRequest {
 
 message GetUserResponse {
     string image = 1;
-    string name = 2;
-    int64 id = 3;
+    string name = 3;
+    string login = 2;
+    int64 id = 4;
+}
+
+message GetUsersRequest {
+    repeated int64 ids = 1;
+}
+
+message GetUsersResponse {
+    repeated GetUserResponse users = 1;
+    repeated int64 ids = 2;
+}
+
+message AuthorizationRequest {
+    string token = 1;
+}
+
+message AuthorizationResponse {
+    int64 id = 4;
+    string login = 2;
+    string email = 3;
+    string token = 1;
+    bool confirmed_email = 5;
 }
 
 message GetUserFriendRequest {

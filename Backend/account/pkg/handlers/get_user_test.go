@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/gin-gonic/gin"
@@ -14,11 +15,10 @@ import (
 )
 
 func TestGetUser(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 	r.GET("/user/:login", func(c *gin.Context) {
-		GetUser(c, mockPostgres)
+		handlers.GetUser(c, mockPostgres)
 	})
 
 	var login string = "testuser"
@@ -45,11 +45,14 @@ func TestGetUser(t *testing.T) {
 	mockPostgres.AssertExpectations(t)
 
 	expectedResponse := gin.H{
-		"login":           user.Login,
-		"name":            user.Name,
-		"email":           user.Email,
-		"confirmed_email": user.ConfirmedEmail,
-		"image":           interface{}(nil),
+		"id":       float64(user.Id),
+		"login":    user.Login,
+		"name":     user.Name,
+		"email":    user.Email,
+		"birthday": user.Birthday.Format(time.RFC3339Nano),
+		"phone":    user.Phone,
+		"city":     user.City,
+		"image":    interface{}(nil),
 	}
 	var actualResponse gin.H
 	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)

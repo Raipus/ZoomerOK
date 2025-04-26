@@ -2,41 +2,54 @@ package postgres
 
 import (
 	"errors"
+	"time"
+
+	"github.com/Raipus/ZoomerOK/blog/pkg/config"
 )
 
-func (Instance *RealPostgres) CreatePost(userId int, text string, image []byte) error {
+func (Instance *RealPostgres) CreatePost(userId int, text string, image []byte) (int, error) {
 	var post Post
 	post.UserId = userId
 	post.Text = text
 	post.Image = image
-	return Instance.instance.Create(post).Error
+	now := time.Now()
+	post.Time = &now
+
+	result := Instance.instance.Create(&post)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return post.Id, nil
 }
 
 func (Instance *RealPostgres) DeletePost(userId int, postId int) error {
 	var post Post
 	if err := Instance.instance.First(&post, postId).Error; err != nil {
-		return err
+		return errors.New("Пользователь не имеет права на данную операцию")
 	}
 	if post.UserId != userId {
-		return errors.New("unauthorized to delete this post")
+		return errors.New("Пользователь не имеет права на данную операцию")
 	}
 	return Instance.instance.Delete(&post).Error
 }
 
-func (Instance *RealPostgres) CreateComment(userId int, text string) error {
+func (Instance *RealPostgres) CreateComment(userId, postId int, text string) error {
 	var comment Comment
 	comment.UserId = userId
+	comment.PostId = postId
 	comment.Text = text
+	now := time.Now()
+	comment.Time = &now
 	return Instance.instance.Create(comment).Error
 }
 
 func (Instance *RealPostgres) DeleteComment(userId int, commentId int) error {
 	var comment Comment
 	if err := Instance.instance.First(&comment, commentId).Error; err != nil {
-		return err
+		return errors.New("Пользователь не имеет права на данную операцию")
 	}
 	if comment.UserId != userId {
-		return errors.New("unauthorized to delete this comment")
+		return errors.New("Пользователь не имеет права на данную операцию")
 	}
 	return Instance.instance.Delete(&comment).Error
 }
@@ -49,23 +62,38 @@ func (Instance *RealPostgres) GetPost(postId int) (*Post, error) {
 	return &post, nil
 }
 
-func (Instance *RealPostgres) GetPosts(userId int) ([]Post, error) {
+func (Instance *RealPostgres) GetPosts(userIds []int, page int) ([]Post, error) {
 	var posts []Post
-	if err := Instance.instance.Where("user_id = ?", userId).Find(&posts).Error; err != nil {
+	offset := (page - 1) * config.Config.PageSize
+	if err := Instance.instance.Where("user_id IN ?", userIds).
+		Order("created_at DESC").
+		Limit(config.Config.PageSize).
+		Offset(offset).
+		Find(&posts).Error; err != nil {
 		return nil, err
 	}
 	return posts, nil
 }
 
-func (Instance *RealPostgres) GetComments(postId int) ([]Comment, error) {
+func (Instance *RealPostgres) GetComments(postId, page int) ([]Comment, error) {
 	var comments []Comment
-	if err := Instance.instance.Where("post_id = ?", postId).Find(&comments).Error; err != nil {
+	offset := (page - 1) * config.Config.PageSize
+	if err := Instance.instance.Where("post_id = ?", postId).
+		Order("created_at DESC").
+		Limit(config.Config.PageSize).
+		Offset(offset).
+		Find(&comments).Error; err != nil {
 		return nil, err
 	}
 	return comments, nil
 }
 
 func (Instance *RealPostgres) Like(userId int, postId int) error {
-	like := Like{PostId: postId, UserId: userId}
-	return Instance.instance.Create(&like).Error
+	var like Like
+	if err := Instance.instance.Where("user_id = ? AND post_id = ?", userId, postId).First(&like).Error; err != nil {
+		newLike := Like{PostId: postId, UserId: userId}
+		return Instance.instance.Create(&newLike).Error
+	} else {
+		return Instance.instance.Delete(&like).Error
+	}
 }

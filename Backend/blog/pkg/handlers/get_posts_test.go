@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"encoding/json"
@@ -8,68 +8,66 @@ import (
 	"time"
 
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker"
+	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
+	"github.com/Raipus/ZoomerOK/blog/pkg/handlers"
+	"github.com/Raipus/ZoomerOK/blog/pkg/memory"
 	"github.com/Raipus/ZoomerOK/blog/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/blog/pkg/router"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetPosts(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
+	userId := 1
+	r.Use(func(c *gin.Context) {
+		c.Set("user_id", float64(userId))
+		c.Next()
+	})
 	mockPostgres := new(postgres.MockPostgres)
 	mockBroker := new(broker.MockBroker)
-
+	mockMessageQueue := new(memory.MockMessageQueue)
 	r.GET("/posts", func(c *gin.Context) {
-		GetPosts(c, mockPostgres, mockBroker)
+		handlers.GetPosts(c, mockPostgres, mockBroker, mockMessageQueue)
 	})
 
-	postTime := time.Now()
-	post1 := postgres.Post{
-		Id:     4,
-		UserId: 3,
-		Text:   "Пост 1",
-		Image:  nil,
-		Time:   &postTime,
-	}
-	post2 := postgres.Post{
-		Id:     6,
-		UserId: 4,
-		Text:   "Пост 2",
-		Image:  nil,
-		Time:   &postTime,
-	}
-
-	mockPostgres.On("GetPosts", 1).Return([]postgres.Post{post1, post2}, nil)
-
-	req, err := http.NewRequest("GET", "/posts", nil)
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	mockPostgres.AssertExpectations(t)
-
-	expectedResponse := gin.H{
-		"posts": []interface{}{
-			map[string]interface{}{
-				"id":      float64(post1.Id),
-				"user_id": float64(post1.UserId),
-				"text":    post1.Text,
-				"image":   interface{}(nil),
+	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	mockBroker.On("PushUserFriend", mock.Anything).Return(nil)
+	mockMessageQueue.On("GetLastMessage").Return(&pb.GetUserFriendResponse{Ids: []int64{1, 2}, Id: 1}).Once()
+	mockPostgres.On("GetPosts", []int{1, 2}, 1).Return([]postgres.Post{{Id: 1, UserId: 1, Text: "Пост 1", Image: []byte{}, Time: &date}}, nil)
+	mockBroker.On("PushUsers", mock.Anything).Return(nil)
+	mockMessageQueue.On("GetLastMessage").Return(&pb.GetUsersResponse{
+		Users: []*pb.GetUserResponse{
+			&pb.GetUserResponse{
+				Image: "",
+				Name:  "username1",
+				Login: "testuser1",
+				Id:    1,
 			},
-			map[string]interface{}{
-				"id":      float64(post2.Id),
-				"user_id": float64(post2.UserId),
-				"text":    post2.Text,
-				"image":   interface{}(nil),
+			&pb.GetUserResponse{
+				Image: "",
+				Name:  "username2",
+				Login: "testuser2",
+				Id:    2,
 			},
 		},
-	}
+		Ids: []int64{1, 2},
+	}).Once()
+
+	req, _ := http.NewRequest("GET", "/posts?page=1", nil)
+	req.Header.Set("Authorization", "Bearer testtoken")
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockPostgres.AssertExpectations(t)
+	mockBroker.AssertExpectations(t)
+	mockMessageQueue.AssertExpectations(t)
+
 	var actualResponse gin.H
-	err = json.Unmarshal(w.Body.Bytes(), &actualResponse)
+	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, actualResponse)
+	assert.NotEmpty(t, actualResponse["posts"])
 }

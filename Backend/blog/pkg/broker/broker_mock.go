@@ -9,13 +9,23 @@ type MockBroker struct {
 	mock.Mock
 }
 
-func (m *MockBroker) PushGetUser(redisUser *pb.GetUserRequest) error {
-	args := m.Called(redisUser)
+func (m *MockBroker) PushUser(getUserRequest *pb.GetUserRequest) error {
+	args := m.Called(getUserRequest)
 	return args.Error(0)
 }
 
-func (m *MockBroker) PushGetUserFriend(redisUserFriend *pb.GetUserFriendRequest) error {
-	args := m.Called(redisUserFriend)
+func (m *MockBroker) PushUsers(getUsersRequest *pb.GetUsersRequest) error {
+	args := m.Called(getUsersRequest)
+	return args.Error(0)
+}
+
+func (m *MockBroker) PushUserFriend(getUserFriendRequest *pb.GetUserFriendRequest) error {
+	args := m.Called(getUserFriendRequest)
+	return args.Error(0)
+}
+
+func (m *MockBroker) Authorization(authorizationRequest *pb.AuthorizationRequest) error {
+	args := m.Called(authorizationRequest)
 	return args.Error(0)
 }
 

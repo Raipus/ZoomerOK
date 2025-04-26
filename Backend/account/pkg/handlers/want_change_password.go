@@ -9,10 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// AcceptFriendForm представляет данные, необходимые для принятия запроса на дружбу.
 type WantChangePasswordForm struct {
-	Email string `json:"email"`
+	Email string `json:"email"` // Email пользователя, который хочет поменять пароль.
 }
 
+// WantChangePassword отправляет запрос на изменение пароля
+// @Summary Отправить запрос на изменение пароля
+// @Description Позволяет пользователю отправить электронную почту для смены пароля.
+// @Accept json
+// @Produce json
+// @Param user body WantChangePasswordForm true "Данные для отправки электронной почты для смены пароля"
+// @Success 200 {object} gin.H {"email": "Электронная почта пользователя"}
+// @Failure 400 {object} gin.H {"error": "Некорректный формат данных"}
+// @Router /want_change_password [get]
 func WantChangePassword(c *gin.Context, db postgres.PostgresInterface, smtp security.SMTPInterface, cache caching.CachingInterface) {
 	var newWantChangePasswordForm WantChangePasswordForm
 	if err := c.BindJSON(&newWantChangePasswordForm); err != nil {

@@ -10,10 +10,10 @@ type User struct {
 	gorm.Model
 	Id             int        `gorm:"primaryKey;autoIncrement"`
 	Login          string     `gorm:"not null;size:30"`
-	Name           string     `gorm:"not null;size:30"`
+	Name           string     `gorm:"not null;size:50"`
 	Email          string     `gorm:"not null;size:30;unique"`
 	ConfirmedEmail bool       `gorm:"default:false"`
-	Password       string     `gorm:"not null;size:30"`
+	Password       string     `gorm:"not null;size:500"`
 	Birthday       *time.Time `gorm:"default:null"`
 	Phone          string     `gorm:"default:null"`
 	City           string     `gorm:"default:null"`

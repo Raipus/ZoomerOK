@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,7 @@ type ConfigType struct {
 	ResetCache          string `mapstructure:"RESET_CACHE"`
 	GenerateLinkLength  int    `mapstructure:"GENERATE_LINK_LENGTH"`
 	GenerateLinkCharset string `mapstructure:"GENERATE_LINK_CHARSET"`
+	FrontendLink        string `mapstructure:"FRONTEND_LINK"`
 	Photo               PhotoConfig
 
 	SmtpUsername string `mapstructure:"SMTP_USERNAME"`
@@ -32,10 +34,11 @@ type ConfigType struct {
 	SmtpHost     string `mapstructure:"SMTP_HOST"`
 	SmtpPort     string `mapstructure:"SMTP_PORT"`
 
-	KafkaAccountBlogTopic string `mapstructure:"KAFKA_ACCOUNT_BLOG_TOPIC"`
-	KafkaBrokerHost       string `mapstructure:"KAFKA_BROKER_HOST"`
-	KafkaBrokerPort       int    `mapstructure:"KAFKA_BROKER_PORT"`
-	KafkaBrokerUrl        string
+	KafkaReaderTopic string `mapstructure:"KAFKA_READER_TOPIC"`
+	KafkaWriterTopic string `mapstructure:"KAFKA_WRITER_TOPIC"`
+	KafkaBrokerHost  string `mapstructure:"KAFKA_BROKER_HOST"`
+	KafkaBrokerPort  int    `mapstructure:"KAFKA_BROKER_PORT"`
+	KafkaBrokerUrl   string
 
 	RedisHost     string `mapstructure:"REDIS_HOST"`
 	RedisPort     int    `mapstructure:"REDIS_PORT"`
@@ -59,6 +62,7 @@ func LoadConfig() (c *ConfigType) {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	if !strings.HasSuffix(os.Args[0], ".test") {
+		gin.SetMode(gin.ReleaseMode)
 		viper.AddConfigPath("./pkg/config/envs")
 
 		viper.SetConfigName("prod")
@@ -71,6 +75,7 @@ func LoadConfig() (c *ConfigType) {
 			fmt.Printf("Ошибка при объединении файла prod.db.env: %s\n", err)
 		}
 	} else {
+		gin.SetMode(gin.TestMode)
 		viper.AddConfigPath("../config/envs")
 		viper.SetConfigName("test")
 		if err := viper.ReadInConfig(); err != nil {
@@ -110,14 +115,15 @@ func LoadConfig() (c *ConfigType) {
 		fmt.Printf("%s: %v\n", key, value)
 	}
 
-	c.KafkaBrokerUrl = c.KafkaBrokerHost + ":" + string(c.KafkaBrokerPort)
-	c.RedisUrl = c.RedisHost + ":" + string(c.RedisPort)
+	c.KafkaBrokerUrl = c.KafkaBrokerHost + ":" + strconv.Itoa(c.KafkaBrokerPort)
+	c.RedisUrl = c.RedisHost + ":" + strconv.Itoa(c.RedisPort)
 
 	c.Photo.Large = viper.GetUint("large")
 	c.Photo.Small = viper.GetUint("small")
 	c.Photo.ImagePathProd = viper.GetString("image_path_prod")
 	c.Photo.ImagePathTest = viper.GetString("image_path_test")
 	c.Photo.Default = viper.GetString("default")
+	c.Photo.Base64Small = viper.GetString("base64_small")
 
 	if !strings.HasSuffix(os.Args[0], ".test") {
 		c.Photo.Image = c.Photo.ImagePathProd + "/" + c.Photo.Default
@@ -127,7 +133,6 @@ func LoadConfig() (c *ConfigType) {
 
 	byteImage := getByteImage(c)
 	c.Photo.ByteImage = byteImage
-	gin.SetMode(gin.ReleaseMode)
 	return
 }
 

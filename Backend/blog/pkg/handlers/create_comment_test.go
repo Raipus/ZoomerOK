@@ -1,12 +1,14 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Raipus/ZoomerOK/blog/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/blog/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/blog/pkg/router"
 	"github.com/gin-gonic/gin"
@@ -14,34 +16,43 @@ import (
 )
 
 func TestCreateComment(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
+	userId := 1
+	r.Use(func(c *gin.Context) {
+		c.Set("user_id", float64(userId))
+		c.Next()
+	})
 	mockPostgres := new(postgres.MockPostgres)
-
-	createCommentData := CreateCommentForm{
-		PostId: 1,
-		Text:   "Новый комментарий",
-	}
-
-	r.POST("/create_comment", func(c *gin.Context) {
-		CreateComment(c, mockPostgres)
+	r.POST("/post/:post_id/create_comment", func(c *gin.Context) {
+		handlers.CreateComment(c, mockPostgres)
 	})
 
-	mockPostgres.On("CreateComment", 1, createCommentData.Text).Return(nil)
+	postId := "123"
+	commentText := "Это тестовый комментарий"
 
-	jsonData, err := json.Marshal(createCommentData)
-	if err != nil {
-		t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
-	}
+	// Установим ожидания для mock
+	mockPostgres.On("CreateComment", userId, 123, commentText).Return(nil)
 
-	req, err := http.NewRequest("POST", "/create_comment", bytes.NewBuffer(jsonData))
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
+	// Создадим JSON-данные для запроса
+	jsonData := gin.H{"text": commentText}
+	jsonValue, _ := json.Marshal(jsonData)
+
+	// Создадим запрос
+	req, _ := http.NewRequest("POST", "/post/"+postId+"/create_comment", bytes.NewReader(jsonValue))
+	req.Header.Set("Authorization", "Bearer testtoken")
+	req = req.WithContext(context.WithValue(req.Context(), "user_id", float64(userId)))
+
+	// Запишем ответ
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusCreated, w.Code)
 
+	// Проверим статус ответа
+	assert.Equal(t, http.StatusCreated, w.Code)
 	mockPostgres.AssertExpectations(t)
+
+	// Проверка на пустой ответ
+	var actualResponse gin.H
+	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)
+	assert.NoError(t, err)
+	assert.Empty(t, actualResponse)
 }

@@ -1,6 +1,7 @@
 package caching
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -28,7 +29,6 @@ type RealCache struct {
 
 // initCache - инициализация кэша
 func initCache() *cache.Cache {
-	log.Println("Caching initialized")
 	return cache.New(time.Duration(config.Config.TimeCache)*time.Second, time.Duration(config.Config.TimeCache)*time.Second)
 }
 
@@ -40,6 +40,7 @@ func (r *RealCache) SetCacheResetLink(login, resetLink string) {
 
 func (r *RealCache) SetCacheConfirmationLink(login, confirmationLink string) {
 	key := config.Config.ConfirmationCache + "_" + confirmationLink
+	log.Println("key", key)
 	r.cache.Set(key, login, cache.DefaultExpiration)
 }
 
@@ -57,6 +58,13 @@ func (r *RealCache) GetCacheResetLink(resetLink string) string {
 }
 
 func (r *RealCache) GetCacheConfirmationLink(confirmationLink string) string {
+	items := r.cache.Items()
+
+	// Итерируемся по карте и выводим ключи.
+	fmt.Println("Ключи кэша:")
+	for k := range items {
+		fmt.Println(k)
+	}
 	key := config.Config.ConfirmationCache + "_" + confirmationLink
 	value, found := r.cache.Get(key)
 	if !found {

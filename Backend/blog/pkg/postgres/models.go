@@ -18,7 +18,7 @@ type Post struct {
 type Comment struct {
 	gorm.Model
 	Id     int        `gorm:"primaryKey;autoIncrement"`
-	UserId int        `gorm:"not null"`
+	UserId int        `gorm:"not null;index"`
 	PostId int        `gorm:"not null;index"`
 	Text   string     `gorm:"not null"`
 	Time   *time.Time `gorm:"not null"`

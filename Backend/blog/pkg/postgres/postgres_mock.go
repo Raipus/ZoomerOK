@@ -8,9 +8,9 @@ type MockPostgres struct {
 	mock.Mock
 }
 
-func (m *MockPostgres) CreatePost(userId int, text string, image []byte) error {
+func (m *MockPostgres) CreatePost(userId int, text string, image []byte) (int, error) {
 	args := m.Called(userId, text, image)
-	return args.Error(0)
+	return args.Int(0), args.Error(1)
 }
 
 func (m *MockPostgres) DeletePost(userId int, postId int) error {
@@ -18,8 +18,8 @@ func (m *MockPostgres) DeletePost(userId int, postId int) error {
 	return args.Error(0)
 }
 
-func (m *MockPostgres) CreateComment(userId int, text string) error {
-	args := m.Called(userId, text)
+func (m *MockPostgres) CreateComment(userId, postId int, text string) error {
+	args := m.Called(userId, postId, text)
 	return args.Error(0)
 }
 
@@ -33,13 +33,13 @@ func (m *MockPostgres) GetPost(postId int) (*Post, error) {
 	return args.Get(0).(*Post), args.Error(1)
 }
 
-func (m *MockPostgres) GetPosts(userId int) ([]Post, error) {
-	args := m.Called(userId)
+func (m *MockPostgres) GetPosts(userIds []int, page int) ([]Post, error) {
+	args := m.Called(userIds, page)
 	return args.Get(0).([]Post), args.Error(1)
 }
 
-func (m *MockPostgres) GetComments(postId int) ([]Comment, error) {
-	args := m.Called(postId)
+func (m *MockPostgres) GetComments(postId, page int) ([]Comment, error) {
+	args := m.Called(postId, page)
 	return args.Get(0).([]Comment), args.Error(1)
 }
 

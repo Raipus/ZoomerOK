@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -6,7 +6,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/Raipus/ZoomerOK/account/pkg/config"
+	"github.com/Raipus/ZoomerOK/account/pkg/handlers"
+	"github.com/Raipus/ZoomerOK/account/pkg/memory"
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
 	"github.com/Raipus/ZoomerOK/account/pkg/router"
 	"github.com/gin-gonic/gin"
@@ -17,18 +21,43 @@ func TestLogin(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
+	mockRedis := new(memory.MockRedis)
 
-	loginData := LoginForm{
+	loginData := handlers.LoginForm{
 		LoginOrEmail: "testuser",
 		Password:     "password",
 	}
 
-	r.POST("/login", func(c *gin.Context) {
-		Login(c, mockPostgres)
-	})
+	birthday := time.Now()
+	byteImage := config.Config.Photo.ByteImage
+	user := postgres.User{
+		Id:             1,
+		Login:          "testuser",
+		Name:           "Тестовый Пользователь",
+		Email:          "testuser@example.com",
+		ConfirmedEmail: true,
+		Password:       "securepassword",
+		Birthday:       &birthday,
+		Phone:          "123-456-7890",
+		City:           "Москва",
+		Image:          byteImage,
+	}
 
 	var token string = "new-token"
-	mockPostgres.On("Login", loginData.LoginOrEmail, loginData.Password).Return(token, "")
+	redisAuthorization := memory.RedisAuthorization{
+		UserId:         user.Id,
+		Token:          token,
+		Login:          user.Login,
+		Email:          user.Email,
+		ConfirmedEmail: user.ConfirmedEmail,
+	}
+
+	mockPostgres.On("Login", loginData.LoginOrEmail, loginData.Password).Return(user, token, "")
+	mockRedis.On("SetAuthorization", redisAuthorization).Return()
+
+	r.POST("/login", func(c *gin.Context) {
+		handlers.Login(c, mockPostgres, mockRedis)
+	})
 
 	jsonData, err := json.Marshal(loginData)
 	if err != nil {
@@ -52,4 +81,5 @@ func TestLogin(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResponse, actualResponse)
 	mockPostgres.AssertExpectations(t)
+	mockRedis.AssertExpectations(t)
 }
