@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
@@ -9,7 +10,6 @@ import (
 
 // AddFriendForm представляет данные, необходимые для отправки запроса на дружбу.
 type AddFriendForm struct {
-	UserId       int `json:"user_id"`        // ID пользователя, который отправляет запрос.
 	FriendUserId int `json:"friend_user_id"` // ID пользователя, получивший запрос на дружбу.
 }
 
@@ -33,7 +33,21 @@ func AddFriend(c *gin.Context, db postgres.PostgresInterface) {
 		return
 	}
 
-	if err := db.AddFriendRequest(newAddFriendForm.UserId, newAddFriendForm.FriendUserId); err != nil {
+	userIdInterface, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User ID not found in context"})
+		return
+	}
+
+	userIdFloat, ok := userIdInterface.(float64)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user ID format"})
+		return
+	}
+
+	log.Println("userId", userIdFloat)
+	userId := int(18)
+	if err := db.AddFriendRequest(userId, newAddFriendForm.FriendUserId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Ошибка сервиса",
 		})

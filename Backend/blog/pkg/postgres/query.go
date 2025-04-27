@@ -40,7 +40,7 @@ func (Instance *RealPostgres) CreateComment(userId, postId int, text string) err
 	comment.Text = text
 	now := time.Now()
 	comment.Time = &now
-	return Instance.instance.Create(comment).Error
+	return Instance.instance.Create(&comment).Error
 }
 
 func (Instance *RealPostgres) DeleteComment(userId int, commentId int) error {

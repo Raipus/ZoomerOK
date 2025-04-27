@@ -1,12 +1,12 @@
 package postgres
 
-func (Instance *RealPostgres) CreateUser(user *User) bool {
+func (Instance *RealPostgres) CreateUser(user *User) (User, bool) {
 	result := Instance.instance.Create(&user)
 	if result.Error != nil {
-		return false
+		return User{}, false
 	}
 
-	return true
+	return *user, true
 }
 
 func (Instance *RealPostgres) ChangeUser(user *User) bool {

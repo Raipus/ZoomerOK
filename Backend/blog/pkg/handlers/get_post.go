@@ -41,14 +41,14 @@ func GetPost(c *gin.Context, db postgres.PostgresInterface, broker broker.Broker
 	}
 
 	getUserRequest := &pb.GetUserRequest{
-		Id: int64(post.Id),
+		Id: int64(post.UserId),
 	}
 	if err := broker.PushUser(getUserRequest); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
 		return
 	}
 
-	time.Sleep(time.Millisecond * 200)
+	time.Sleep(time.Millisecond * 100)
 	message := messageQueue.GetLastMessage()
 
 	getUserResponse, ok := message.(*pb.GetUserResponse)

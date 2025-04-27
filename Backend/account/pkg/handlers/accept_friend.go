@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/memory"
@@ -10,7 +11,6 @@ import (
 
 // AcceptFriendForm представляет данные, необходимые для принятия запроса на дружбу.
 type AcceptFriendForm struct {
-	UserId       int `json:"user_id"`        // ID пользователя, который принимает запрос.
 	FriendUserId int `json:"friend_user_id"` // ID пользователя, отправившего запрос на дружбу.
 }
 
@@ -33,7 +33,21 @@ func AcceptFriend(c *gin.Context, db postgres.PostgresInterface, redis memory.Re
 		return
 	}
 
-	if err := db.AcceptFriendRequest(newAcceptFriendForm.UserId, newAcceptFriendForm.FriendUserId); err != nil {
+	userIdInterface, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User ID not found in context"})
+		return
+	}
+
+	userIdFloat, ok := userIdInterface.(float64)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user ID format"})
+		return
+	}
+
+	log.Println("userId", userIdFloat)
+	userId := int(18)
+	if err := db.AcceptFriendRequest(userId, newAcceptFriendForm.FriendUserId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -41,7 +55,7 @@ func AcceptFriend(c *gin.Context, db postgres.PostgresInterface, redis memory.Re
 	}
 
 	redisUserFriend := memory.RedisUserFriend{
-		UserId:    newAcceptFriendForm.UserId,
+		UserId:    userId,
 		FriendIds: []int{newAcceptFriendForm.FriendUserId},
 	}
 	redis.AddUserFriend(redisUserFriend)

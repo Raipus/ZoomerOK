@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker"
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
@@ -52,8 +53,13 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 		return
 	}
 
+	time.Sleep(time.Millisecond * 100)
 	message := messageQueue.GetLastMessage()
 
+	if message == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Посты не найдены"})
+		return
+	}
 	getUserFriendResponse, ok := message.(*pb.GetUserFriendResponse)
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
@@ -62,7 +68,7 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 	}
 
 	if getUserFriendResponse.Id == 0 {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Invalid response"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Посты не найдены"})
 		log.Println("Empty response from message queue")
 		return
 	}
@@ -79,8 +85,8 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 	}
 
 	userIds := make(map[int64]bool)
-	for _, comment := range posts {
-		userIds[int64(comment.UserId)] = true
+	for _, post := range posts {
+		userIds[int64(post.UserId)] = true
 	}
 
 	ids := make([]int64, 0, len(userIds))
@@ -88,6 +94,7 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 		ids = append(ids, userId)
 	}
 
+	log.Println("unique users", ids)
 	getUsersRequest := &pb.GetUsersRequest{
 		Ids: ids,
 	}
@@ -96,8 +103,13 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 		return
 	}
 
+	time.Sleep(time.Millisecond * 100)
 	message = messageQueue.GetLastMessage()
 
+	if message == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Посты не найдены"})
+		return
+	}
 	getUsersResponse, ok := message.(*pb.GetUsersResponse)
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
@@ -107,7 +119,7 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 	}
 
 	if len(getUsersResponse.Ids) == 0 {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Invalid response"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Посты не найдены"})
 		log.Println("Empty response from message queue")
 		return
 	}

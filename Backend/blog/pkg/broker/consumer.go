@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
 	"github.com/Raipus/ZoomerOK/blog/pkg/memory"
@@ -12,6 +13,7 @@ import (
 func (broker *RealBroker) Listen() {
 	log.Println("Start listening broker")
 	for {
+		time.Sleep(time.Millisecond)
 		m, err := broker.reader.ReadMessage(context.Background())
 		if err != nil {
 			log.Printf("error while receiving message: %s", err.Error()) // Используем Printf, а не Fatal

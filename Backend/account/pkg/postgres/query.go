@@ -70,10 +70,15 @@ func (Instance *RealPostgres) Signup(login, name, email, password string) (User,
 		return User{}, "", false
 	}
 
+	createdUser, created := Instance.CreateUser(&user)
+	if created == false {
+		return User{}, "", false
+	}
+
 	userToken := security.UserToken{
-		Id:    float64(user.Id),
-		Login: user.Login,
-		Email: user.Email,
+		Id:    float64(createdUser.Id),
+		Login: createdUser.Login,
+		Email: createdUser.Email,
 	}
 
 	token, err := security.GenerateJWT(userToken)
@@ -81,7 +86,7 @@ func (Instance *RealPostgres) Signup(login, name, email, password string) (User,
 		return User{}, "", false
 	}
 
-	return user, token, Instance.CreateUser(&user)
+	return user, token, true
 }
 
 // TODO: написать валидацию данных

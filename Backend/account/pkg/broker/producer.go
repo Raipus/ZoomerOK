@@ -14,6 +14,7 @@ import (
 
 func (broker *RealBroker) PushUser(getUserResponse *pb.GetUserResponse) error {
 	log.Println("Push User")
+	log.Println(getUserResponse)
 	data, err := proto.Marshal(getUserResponse)
 	if err != nil {
 		log.Fatalf("Failed to marshal message: %s", err)
@@ -30,6 +31,7 @@ func (broker *RealBroker) PushUser(getUserResponse *pb.GetUserResponse) error {
 
 func (broker *RealBroker) PushUsers(getUsersResponse *pb.GetUsersResponse) error {
 	log.Println("Push Users")
+	log.Println(getUsersResponse)
 	data, err := proto.Marshal(getUsersResponse)
 	if err != nil {
 		log.Fatalf("Failed to marshal message: %s", err)
@@ -51,6 +53,7 @@ func (broker *RealBroker) PushUsers(getUsersResponse *pb.GetUsersResponse) error
 
 func (broker *RealBroker) PushUserFriend(getUserFriendResponse *pb.GetUserFriendResponse) error {
 	log.Println("Push User Friend")
+	log.Println(getUserFriendResponse)
 	data, err := proto.Marshal(getUserFriendResponse)
 	if err != nil {
 		log.Fatalf("Failed to marshal message: %s", err)
@@ -67,6 +70,7 @@ func (broker *RealBroker) PushUserFriend(getUserFriendResponse *pb.GetUserFriend
 
 func (broker *RealBroker) Authorization(authorizationResponse *pb.AuthorizationResponse) error {
 	log.Println("Authorization")
+	log.Println(authorizationResponse)
 	data, err := proto.Marshal(authorizationResponse)
 	if err != nil {
 		log.Fatalf("Failed to marshal message: %s", err)

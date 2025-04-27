@@ -46,7 +46,7 @@ func AuthMiddleware(broker broker.BrokerInterface, messageQueue memory.MessageQu
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
 			return
 		}
-		time.Sleep(time.Millisecond * 200)
+		time.Sleep(time.Millisecond * 100)
 		message := messageQueue.GetLastMessage()
 		log.Println("message:", message)
 		authorizationResponse, ok := message.(*pb.AuthorizationResponse)

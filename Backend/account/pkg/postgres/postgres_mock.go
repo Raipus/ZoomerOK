@@ -23,9 +23,9 @@ func (m *MockPostgres) ChangePassword(user *User, newPassword string) error {
 	return args.Error(0)
 }
 
-func (m *MockPostgres) CreateUser(user *User) bool {
+func (m *MockPostgres) CreateUser(user *User) (User, bool) {
 	args := m.Called(user)
-	return args.Bool(0)
+	return args.Get(0).(User), args.Bool(1)
 }
 
 func (m *MockPostgres) UpdateUserPassword(user *User, newPassword string) error {

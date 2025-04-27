@@ -3,6 +3,7 @@ version: '3'
 services:
   zookeeper:
     image: wurstmeister/zookeeper:latest
+    restart: always
     container_name: zoomerok_zookeeper
     ports:
       - "2181:2181"
@@ -13,6 +14,7 @@ services:
 
   kafka:
     image: wurstmeister/kafka:latest
+    restart: always
     container_name: zoomerok_kafka
     ports:
       - "9092:9092" # Внутренний порт для связи между контейнерами
@@ -24,18 +26,16 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
       KAFKA_LISTENERS: INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:9094
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
     hostname: kafka
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 1G
     networks:
       - kafka_network
+      - microservice_network
 
 
 networks:
   kafka_network:
+  microservice_network:
     external: true

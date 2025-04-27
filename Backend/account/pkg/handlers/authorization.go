@@ -51,6 +51,7 @@ func AuthMiddleware(db postgres.PostgresInterface) gin.HandlerFunc {
 			log.Println("Invalid id claim")
 			return
 		}
+		log.Println("id", id)
 
 		login, ok := claims["login"].(string)
 		if !ok {

@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/broker/pb"
 	"github.com/Raipus/ZoomerOK/account/pkg/memory"
@@ -12,6 +13,7 @@ import (
 func (broker *RealBroker) Listen() {
 	log.Println("Start listening broker")
 	for {
+		time.Sleep(time.Millisecond)
 		m, err := broker.reader.ReadMessage(context.Background())
 		if err != nil {
 			log.Fatal("error while receiving message: %s", err.Error())
@@ -125,12 +127,12 @@ func (broker *RealBroker) HandleGetUsersRequest(request pb.GetUsersRequest) {
 		}
 	} else {
 		users := make([]*pb.GetUserResponse, 0, len(redisUsers))
-		for _, redisUser := range users {
+		for _, redisUser := range redisUsers {
 			users = append(users, &pb.GetUserResponse{
 				Image: redisUser.Image,
 				Name:  redisUser.Name,
 				Login: redisUser.Login,
-				Id:    redisUser.Id,
+				Id:    int64(redisUser.UserId),
 			})
 		}
 		response = &pb.GetUsersResponse{

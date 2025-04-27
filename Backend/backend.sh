@@ -3,29 +3,16 @@
 set -e # Останавливаем скрипт при первой же ошибке
 
 # Проверяем, существует ли сеть gateway_network
-if ! docker network inspect gateway_network > /dev/null 2>&1; then
-  echo "Создаем сеть gateway_network..."
-  docker network create gateway_network
+if ! docker network inspect microservice_network > /dev/null 2>&1; then
+  echo "Создаем сеть microservice_network..."
+  docker network create microservice_network
   if [ $? -ne 0 ]; then
-    echo "Ошибка при создании сети gateway_network"
+    echo "Ошибка при создании сети microservice_network"
     exit 1
   fi
-  echo "Сеть gateway_network создана."
+  echo "Сеть microservice_network создана."
 else
-  echo "Сеть gateway_network уже существует."
-fi
-
-# Проверяем, существует ли сеть kafka_network
-if ! docker network inspect kafka_network > /dev/null 2>&1; then
-  echo "Создаем сеть kafka_network..."
-  docker network create kafka_network
-  if [ $? -ne 0 ]; then
-    echo "Ошибка при создании сети kafka_network"
-    exit 1
-  fi
-  echo "Сеть kafka_network создана."
-else
-  echo "Сеть kafka_network уже существует."
+  echo "Сеть microservice_network уже существует."
 fi
 
 echo "Запускаем Backend/account..."

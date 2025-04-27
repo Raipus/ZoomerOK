@@ -11,8 +11,7 @@ services:
     ports:
       - 8081:8081
     networks:
-      - gateway_network
-      - kafka_network
+      - microservice_network
       - server_db
     depends_on:
       - db
@@ -35,8 +34,6 @@ volumes:
 
 
 networks:
-  gateway_network:
-    external: true
-  kafka_network:
+  microservice_network:
     external: true
   server_db:

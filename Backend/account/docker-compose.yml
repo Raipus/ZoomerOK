@@ -10,8 +10,7 @@ services:
     ports:
       - 8080:8080
     networks:
-      - gateway_network
-      - kafka_network
+      - microservice_network
       - server_db
       - server_redis
     depends_on:
@@ -51,9 +50,7 @@ volumes:
 
 
 networks:
-  gateway_network:
-    external: true
-  kafka_network:
+  microservice_network:
     external: true
   server_db:
   server_redis:

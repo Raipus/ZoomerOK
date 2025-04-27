@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
@@ -40,12 +41,12 @@ func CompareRedisAuthorization(redisAuthorization1, redisAuthorization2 RedisAut
 
 func (r *RealRedis) GetUser(userId int) RedisUser {
 	RedisMu.Lock()
-	userData, err := r.client.HMGet(RedisContext, "user_"+string(userId), "login", "name", "image").Result()
+	defer RedisMu.Unlock()
+	userData, err := r.client.HMGet(context.Background(), "user_"+strconv.Itoa(int(userId)), "login", "name", "image").Result()
 	if err != nil {
 		log.Printf("Ошибка при получении пользователя: %v", err)
 		return RedisUser{}
 	}
-	RedisMu.Unlock()
 
 	user := RedisUser{
 		UserId: userId,
@@ -59,7 +60,8 @@ func (r *RealRedis) GetUser(userId int) RedisUser {
 
 func (r *RealRedis) SetUser(redisUser RedisUser) {
 	RedisMu.Lock()
-	err := r.client.HMSet(RedisContext, "user_"+string(redisUser.UserId), map[string]interface{}{
+	defer RedisMu.Unlock()
+	err := r.client.HMSet(context.Background(), "user_"+strconv.Itoa(int(redisUser.UserId)), map[string]interface{}{
 		"login": redisUser.Login,
 		"name":  redisUser.Name,
 		"image": redisUser.Image,
@@ -68,46 +70,44 @@ func (r *RealRedis) SetUser(redisUser RedisUser) {
 	if err != nil {
 		log.Fatalf("Cannot save user: %s", err)
 	}
-
-	RedisMu.Unlock()
 }
 
 func (r *RealRedis) DeleteUser(userId int) {
 	RedisMu.Lock()
-	err := r.client.Del(RedisContext, "user_"+string(userId)).Err()
+	defer RedisMu.Unlock()
+	err := r.client.Del(context.Background(), "user_"+strconv.Itoa(int(userId))).Err()
 
 	if err != nil {
 		log.Fatalf("Cannot delete user: %s", err)
 	}
-
-	RedisMu.Unlock()
 }
 
 func (r *RealRedis) GetUsers(userIds []int) []RedisUser {
-	RedisMu.Lock()
 	if len(userIds) == 0 {
 		return []RedisUser{}
 	}
+	log.Println("user123", userIds)
 	var users []RedisUser
 	for _, friendId := range userIds {
 		user := r.GetUser(friendId)
+		log.Println("user78", user)
 		if user.UserId != 0 { // Check if user was successfully retrieved
 			users = append(users, user)
 		}
 	}
-	RedisMu.Unlock()
 
+	log.Println("users", users)
 	return users
 }
 
 func (r *RealRedis) GetUserFriends(userId int) RedisUserFriend {
 	RedisMu.Lock()
-	friendIds, err := r.client.SMembers(RedisContext, "user_"+string(userId)+"_friends").Result()
+	defer RedisMu.Unlock()
+	friendIds, err := r.client.SMembers(context.Background(), "user_"+strconv.Itoa(int(userId))+"_friends").Result()
 	if err != nil {
 		log.Printf("Ошибка при получении друзей: %v", err)
 		return RedisUserFriend{UserId: userId, FriendIds: []int{}}
 	}
-	RedisMu.Unlock()
 
 	var friends []int
 	for _, id := range friendIds {
@@ -122,40 +122,41 @@ func (r *RealRedis) GetUserFriends(userId int) RedisUserFriend {
 
 func (r *RealRedis) AddUserFriend(redisUserFriend RedisUserFriend) {
 	RedisMu.Lock()
+	defer RedisMu.Unlock()
 	for _, friendId := range redisUserFriend.FriendIds {
-		r.client.SAdd(RedisContext, "user_"+string(redisUserFriend.UserId)+"_friends", friendId)
+		log.Println("Add friend:", friendId)
+		r.client.SAdd(context.Background(), "user_"+strconv.Itoa(int(redisUserFriend.UserId))+"_friends", friendId)
 	}
-	RedisMu.Unlock()
 }
 
 func (r *RealRedis) DeleteAllUserFriend(userId int) {
 	RedisMu.Lock()
-	err := r.client.Del(RedisContext, "user_"+string(userId)+"_friends").Err()
+	defer RedisMu.Unlock()
+	err := r.client.Del(context.Background(), "user_"+strconv.Itoa(int(userId))+"_friends").Err()
 	if err != nil {
 		log.Fatalf("Cannot delete all user friends: %s", err)
 	}
-	RedisMu.Unlock()
 }
 
 func (r *RealRedis) DeleteUserFriend(userId, userFriendId int) {
 	RedisMu.Lock()
-	err := r.client.SRem(RedisContext, "user_"+string(userId)+"_friends", userFriendId).Err()
+	defer RedisMu.Unlock()
+	err := r.client.SRem(context.Background(), "user_"+strconv.Itoa(int(userId))+"_friends", userFriendId).Err()
 	if err != nil {
 		log.Printf("Ошибка при удалении друга: %v", err)
 	}
-	RedisMu.Unlock()
 }
 
 func (r *RealRedis) GetAuthorization(token string) RedisAuthorization {
-	log.Println(333)
 	RedisMu.Lock()
+	defer RedisMu.Unlock()
+	log.Println(333)
 	log.Println(324)
-	userData, err := r.client.HMGet(RedisContext, "auth_"+token, "id", "login", "email", "confirmed_email").Result()
+	userData, err := r.client.HMGet(context.Background(), "auth_"+token, "id", "login", "email", "confirmed_email").Result()
 	if err != nil {
 		log.Printf("Ошибка при получении пользователя: %v", err)
 		return RedisAuthorization{}
 	}
-	RedisMu.Unlock()
 
 	userIdString, ok := userData[0].(string)
 	if !ok {
@@ -191,7 +192,8 @@ func (r *RealRedis) GetAuthorization(token string) RedisAuthorization {
 
 func (r *RealRedis) SetAuthorization(redisAuthorization RedisAuthorization) {
 	RedisMu.Lock()
-	err := r.client.HMSet(RedisContext, "auth_"+redisAuthorization.Token, map[string]interface{}{
+	defer RedisMu.Unlock()
+	err := r.client.HMSet(context.Background(), "auth_"+redisAuthorization.Token, map[string]interface{}{
 		"id":              redisAuthorization.UserId,
 		"login":           redisAuthorization.Login,
 		"email":           redisAuthorization.Email,
@@ -201,17 +203,14 @@ func (r *RealRedis) SetAuthorization(redisAuthorization RedisAuthorization) {
 	if err != nil {
 		log.Fatalf("Cannot save authorization: %s", err)
 	}
-
-	RedisMu.Unlock()
 }
 
 func (r *RealRedis) DeleteAuthorization(token string) {
 	RedisMu.Lock()
-	err := r.client.Del(RedisContext, "auth_"+token).Err()
+	defer RedisMu.Unlock()
+	err := r.client.Del(context.Background(), "auth_"+token).Err()
 
 	if err != nil {
 		log.Fatalf("Cannot delete authorization: %s", err)
 	}
-
-	RedisMu.Unlock()
 }

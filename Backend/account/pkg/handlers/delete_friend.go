@@ -10,7 +10,6 @@ import (
 
 // DeleteFriendForm представляет данные, необходимые для удаления пользователя из друзей.
 type DeleteFriendForm struct {
-	UserId       int `json:"user_id"`        // ID пользователя, который хочет удалить друга.
 	FriendUserId int `json:"friend_user_id"` // ID пользователя, который должен быть удален.
 }
 
@@ -33,13 +32,26 @@ func DeleteFriend(c *gin.Context, db postgres.PostgresInterface, redis memory.Re
 		return
 	}
 
-	if err := db.DeleteFriendRequest(deleteFriendForm.UserId, deleteFriendForm.FriendUserId); err != nil {
+	userIdInterface, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User ID not found in context"})
+		return
+	}
+
+	userIdFloat, ok := userIdInterface.(float64)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user ID format"})
+		return
+	}
+
+	userId := int(userIdFloat)
+	if err := db.DeleteFriendRequest(userId, deleteFriendForm.FriendUserId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Пользователи не являются друзьями",
 		})
 		return
 	}
 
-	redis.DeleteUserFriend(deleteFriendForm.UserId, deleteFriendForm.FriendUserId)
+	redis.DeleteUserFriend(userId, deleteFriendForm.FriendUserId)
 	c.JSON(http.StatusNoContent, gin.H{})
 }

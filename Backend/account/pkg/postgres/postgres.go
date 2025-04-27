@@ -6,7 +6,7 @@ type PostgresInterface interface {
 	Login(loginOrEmail string, password string) (User, string, string)
 	Signup(login string, name string, email string, password string) (User, string, bool)
 	ChangePassword(user *User, newPassword string) error
-	CreateUser(user *User) bool
+	CreateUser(user *User) (User, bool)
 	UpdateUserPassword(user *User, newPassword string) error
 	ChangeUser(user *User) bool
 	ConfirmEmail(login string) (User, bool)
