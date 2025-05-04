@@ -8,9 +8,10 @@ interface DecodedToken {
   // Другие поля
 }
 
-export const useUserStore = defineStore('user', {
+export const useAccountStore = defineStore('account', {
   state: () => ({
-    user: null as any | null,
+    account: null as any | null,
+    isAuthenticated: false,
     isLoading: false,
     error: null as string | null,
   }),
@@ -22,14 +23,16 @@ export const useUserStore = defineStore('user', {
         const token = Cookies.get('access-token')
 
         if (!token) {
+          this.isAuthenticated = false
           throw new Error('Токен отсутствует')
         }
 
+        this.isAuthenticated = true
         const decodedToken = jwtDecode<DecodedToken>(token)
         const userLogin = decodedToken.login
 
         const { data } = await accountApi.getUser(userLogin)
-        this.user = data
+        this.account = data
       } catch (error: any) {
         this.error = error.message
       } finally {
