@@ -21,6 +21,7 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach(authGuard)
+// Отключен гард на время dev
+// router.beforeEach(authGuard)
 
 export default router
