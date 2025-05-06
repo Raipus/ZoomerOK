@@ -62,7 +62,7 @@ func TestSignup(t *testing.T) {
 		Image:  config.Config.Photo.Base64Small,
 	}
 
-	mockSmtp.On("SendConfirmEmail", signupData.Name, signupData.Email, mockCache).Return(nil)
+	mockSmtp.On("SendConfirmEmail", signupData.Login, signupData.Email, mockCache).Return(nil)
 	mockPostgres.On("GetUserByLogin", signupData.Login).Return(postgres.User{})
 	mockPostgres.On("GetUserByEmail", signupData.Email).Return(postgres.User{})
 	mockPostgres.On("Signup", signupData.Login, signupData.Name, signupData.Email, signupData.Password).Return(user, token, true)

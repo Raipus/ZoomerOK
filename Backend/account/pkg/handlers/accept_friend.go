@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/memory"
@@ -45,8 +44,7 @@ func AcceptFriend(c *gin.Context, db postgres.PostgresInterface, redis memory.Re
 		return
 	}
 
-	log.Println("userId", userIdFloat)
-	userId := int(18)
+	userId := int(userIdFloat)
 	if err := db.AcceptFriendRequest(userId, newAcceptFriendForm.FriendUserId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

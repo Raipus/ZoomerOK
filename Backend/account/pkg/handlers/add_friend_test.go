@@ -18,12 +18,16 @@ func TestAddFriend(t *testing.T) {
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 
+	var userId int = 1
 	acceptFriendData := handlers.AddFriendForm{
-		UserId:       1,
 		FriendUserId: 2,
 	}
 
-	mockPostgres.On("AddFriendRequest", acceptFriendData.UserId, acceptFriendData.FriendUserId).Return(nil)
+	r.Use(func(c *gin.Context) {
+		c.Set("user_id", float64(userId))
+		c.Next()
+	})
+	mockPostgres.On("AddFriendRequest", userId, acceptFriendData.FriendUserId).Return(nil)
 
 	jsonData, err := json.Marshal(acceptFriendData)
 	if err != nil {

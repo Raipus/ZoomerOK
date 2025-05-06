@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/Raipus/ZoomerOK/account/pkg/postgres"
@@ -45,8 +44,7 @@ func AddFriend(c *gin.Context, db postgres.PostgresInterface) {
 		return
 	}
 
-	log.Println("userId", userIdFloat)
-	userId := int(18)
+	userId := int(userIdFloat)
 	if err := db.AddFriendRequest(userId, newAddFriendForm.FriendUserId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Ошибка сервиса",

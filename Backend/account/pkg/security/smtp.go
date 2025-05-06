@@ -40,8 +40,8 @@ func initSMTP() smtp.Auth {
 
 func (Smtp *RealSMTP) SendConfirmEmail(login, email string, cache caching.CachingInterface) error {
 	code := GenerateLink()
-	// var confirmationLink string = config.Config.FrontendLink + "/confirm_email/" + code
-	/*confirmEmailMessage := []byte(fmt.Sprintf(
+	var confirmationLink string = config.Config.FrontendLink + "/confirm_email/" + code
+	confirmEmailMessage := []byte(fmt.Sprintf(
 		"Здравствуйте, %s!\n\n"+
 			"Спасибо за регистрацию на нашем сайте. Чтобы активировать вашу учетную запись, пожалуйста, подтвердите свой адрес электронной почты, перейдя по следующей ссылке:\n\n"+
 			"%s\n\n"+
@@ -49,12 +49,12 @@ func (Smtp *RealSMTP) SendConfirmEmail(login, email string, cache caching.Cachin
 			"С уважением,\n"+
 			"ZoomerOk",
 		login, confirmationLink,
-	))*/
+	))
 	cache.SetCacheConfirmationLink(login, code)
 	log.Println("code:", code)
 
 	return fmt.Errorf("ewr")
-	/*var subject string = "Подтверждение электронной почты ZoomerOk"
+	var subject string = "Подтверждение электронной почты ZoomerOk"
 	headers := []byte("From: " + config.Config.SmtpUsername + "\n" +
 		"To: " + email + "\n" +
 		"Subject: " + subject + "\n" +
@@ -62,7 +62,7 @@ func (Smtp *RealSMTP) SendConfirmEmail(login, email string, cache caching.Cachin
 		"Content-Type: text/plain; charset=\"UTF-8\"\n" +
 		"\n")
 	message := append(headers, confirmEmailMessage...)
-	return Smtp.SendEmail(email, message)*/
+	return Smtp.SendEmail(email, message)
 }
 
 func (Smtp *RealSMTP) SendChangePassword(login, email string, cache caching.CachingInterface) error {

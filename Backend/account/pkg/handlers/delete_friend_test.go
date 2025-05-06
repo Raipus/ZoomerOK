@@ -20,13 +20,18 @@ func TestDeleteFriend(t *testing.T) {
 	mockPostgres := new(postgres.MockPostgres)
 	mockRedis := new(memory.MockRedis)
 
+	var userId int = 1
 	deleteFriendData := handlers.DeleteFriendForm{
-		UserId:       1,
 		FriendUserId: 2,
 	}
 
-	mockPostgres.On("DeleteFriendRequest", deleteFriendData.UserId, deleteFriendData.FriendUserId).Return(nil)
-	mockRedis.On("DeleteUserFriend", deleteFriendData.UserId, deleteFriendData.FriendUserId).Return(nil)
+	r.Use(func(c *gin.Context) {
+		c.Set("user_id", float64(userId))
+		c.Next()
+	})
+
+	mockPostgres.On("DeleteFriendRequest", userId, deleteFriendData.FriendUserId).Return(nil)
+	mockRedis.On("DeleteUserFriend", userId, deleteFriendData.FriendUserId).Return()
 
 	jsonData, err := json.Marshal(deleteFriendData)
 	if err != nil {

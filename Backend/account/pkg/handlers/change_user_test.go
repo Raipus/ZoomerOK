@@ -2,7 +2,6 @@ package handlers_test
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -24,7 +23,7 @@ func TestChangeUser(t *testing.T) {
 	mockRedis := new(memory.MockRedis)
 
 	var login string = "testuser"
-	birthday := time.Now()
+	birthday := time.Date(2025, 5, 6, 21, 50, 36, 113918233, time.UTC)
 	byteImage := config.Config.Photo.ByteImage
 	user := postgres.User{
 		Id:             1,
@@ -55,13 +54,12 @@ func TestChangeUser(t *testing.T) {
 	mockPostgres.On("ChangeUser", &user).Return(true)
 	mockRedis.On("SetUser", redisUser).Return()
 
-	encoded := base64.StdEncoding.EncodeToString(byteImage)
 	changeUserData := handlers.ChangeUserForm{
-		Name:     "Обновленный Пользователь",
-		Birthday: &birthday,
-		Phone:    "987-654-3210",
-		City:     "Санкт-Петербург",
-		Image:    []byte(encoded),
+		Name:     user.Name,
+		Birthday: user.Birthday,
+		Phone:    user.Phone,
+		City:     user.City,
+		Image:    user.Image,
 	}
 
 	jsonData, err := json.Marshal(changeUserData)
