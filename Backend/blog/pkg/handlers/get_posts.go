@@ -80,7 +80,7 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 
 	posts, err := db.GetPosts(intIds, page)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Пост не найден"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Посты не найдены"})
 		return
 	}
 

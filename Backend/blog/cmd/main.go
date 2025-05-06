@@ -41,6 +41,9 @@ func run_http_server() {
 	protected.GET(config.Config.Prefix+"/posts", func(c *gin.Context) {
 		handlers.GetPosts(c, postgres.ProductionPostgresInterface, broker.ProductionBrokerInterface, memory.ProductionLastMessageQueue)
 	})
+	protected.GET(config.Config.Prefix+"/user/:id/posts", func(c *gin.Context) {
+		handlers.GetUserPosts(c, postgres.ProductionPostgresInterface, broker.ProductionBrokerInterface, memory.ProductionLastMessageQueue)
+	})
 	protected.POST(config.Config.Prefix+"post/:post_id/like", func(c *gin.Context) {
 		handlers.Like(c, postgres.ProductionPostgresInterface)
 	})
