@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker"
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
@@ -25,7 +24,7 @@ import (
 // @Failure 400 {object} gin.H{"error": "Неверный формат ID комментария"}
 // @Failure 404 {object} gin.H{"error": "Пост не найден"}
 // @Router /post/{post_id} [get]
-func GetPost(c *gin.Context, db postgres.PostgresInterface, broker broker.BrokerInterface, messageQueue memory.MessageQueue) {
+func GetPost(c *gin.Context, db postgres.PostgresInterface, broker broker.BrokerInterface, messageStore memory.MessageStoreInterface) {
 	postIdStr := c.Param("post_id")
 
 	postId, err := strconv.Atoi(postIdStr)
@@ -48,11 +47,8 @@ func GetPost(c *gin.Context, db postgres.PostgresInterface, broker broker.Broker
 		return
 	}
 
-	time.Sleep(time.Millisecond * 100)
-	message := messageQueue.GetLastMessage()
-
-	getUserResponse, ok := message.(*pb.GetUserResponse)
-	if !ok {
+	getUserResponse, err := messageStore.ProcessPushUser(getUserRequest)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
 		log.Println("Invalid response from message queue")
 		return

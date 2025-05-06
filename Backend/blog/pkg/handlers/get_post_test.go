@@ -24,16 +24,16 @@ func TestGetPost(t *testing.T) {
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 	mockBroker := new(broker.MockBroker)
-	mockMessageQueue := new(memory.MockMessageQueue)
+	mockMessageStore := new(memory.MockMessageStore)
 	r.GET("/post/:post_id", func(c *gin.Context) {
-		handlers.GetPost(c, mockPostgres, mockBroker, mockMessageQueue)
+		handlers.GetPost(c, mockPostgres, mockBroker, mockMessageStore)
 	})
 
 	postId := 123
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	mockPostgres.On("GetPost", postId).Return(&postgres.Post{Id: postId, Text: "Тестовый пост", Image: []byte{}, Time: &date}, nil)
 	mockBroker.On("PushUser", mock.Anything).Return(nil)
-	mockMessageQueue.On("GetLastMessage").Return(&pb.GetUserResponse{Id: 1, Login: "testuser", Name: "Тест", Image: ""})
+	mockMessageStore.On("ProcessPushUser", mock.Anything).Return(pb.GetUserResponse{Id: 1, Login: "testuser", Name: "Тест", Image: ""}, nil)
 
 	req, _ := http.NewRequest("GET", "/post/"+strconv.Itoa(postId), nil)
 	req.Header.Set("Authorization", "Bearer testtoken")
@@ -45,7 +45,7 @@ func TestGetPost(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	mockPostgres.AssertExpectations(t)
 	mockBroker.AssertExpectations(t)
-	mockMessageQueue.AssertExpectations(t)
+	mockMessageStore.AssertExpectations(t)
 
 	var actualResponse gin.H
 	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)

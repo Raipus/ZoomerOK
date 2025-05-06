@@ -18,7 +18,7 @@ import (
 func TestAuthMiddleware(t *testing.T) {
 	r := router.SetupRouter(false)
 	mockBroker := new(broker.MockBroker)
-	mockMessageQueue := new(memory.MockMessageQueue)
+	mockMessageStore := new(memory.MockMessageStore)
 
 	userToken := security.UserToken{
 		Id:    float64(1),
@@ -33,7 +33,7 @@ func TestAuthMiddleware(t *testing.T) {
 	authorizationRequest := &pb.AuthorizationRequest{
 		Token: strToken,
 	}
-	authorizationResponse := &pb.AuthorizationResponse{
+	authorizationResponse := pb.AuthorizationResponse{
 		Id:             1,
 		Login:          "testuser",
 		Email:          "testuser@example.com",
@@ -43,9 +43,9 @@ func TestAuthMiddleware(t *testing.T) {
 	var responseInterface interface{} = authorizationResponse
 
 	mockBroker.On("Authorization", authorizationRequest).Return(nil)
-	mockMessageQueue.On("GetLastMessage").Return(responseInterface)
+	mockMessageStore.On("ProcessAuthorization", authorizationRequest).Return(responseInterface, nil)
 
-	r.Use(handlers.AuthMiddleware(mockBroker, mockMessageQueue))
+	r.Use(handlers.AuthMiddleware(mockBroker, mockMessageStore))
 	r.GET("/protected", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "success"})
 	})

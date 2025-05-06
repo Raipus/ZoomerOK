@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker"
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
@@ -23,7 +22,7 @@ import (
 // @Success 200 {object} map[string]interface{} "Successful response"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Router / [get]
-func AuthMiddleware(broker broker.BrokerInterface, messageQueue memory.MessageQueue) gin.HandlerFunc {
+func AuthMiddleware(broker broker.BrokerInterface, messageStore memory.MessageStoreInterface) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -46,11 +45,9 @@ func AuthMiddleware(broker broker.BrokerInterface, messageQueue memory.MessageQu
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
 			return
 		}
-		time.Sleep(time.Millisecond * 100)
-		message := messageQueue.GetLastMessage()
-		log.Println("message:", message)
-		authorizationResponse, ok := message.(*pb.AuthorizationResponse)
-		if !ok {
+		authorizationResponse, err := messageStore.ProcessAuthorization(&authorizationRequest)
+		log.Println("error:", err)
+		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid response"})
 			log.Println("Invalid response from message queue")
 			return

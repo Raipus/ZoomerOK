@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker"
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
@@ -24,7 +23,7 @@ import (
 // @Failure 404 {object} gin.H {"error": "Пост не найден"}
 // @Failure 500 {object} gin.H {"error": "Ошибка сервиса"}
 // @Router /post/:post_id/comments [get]
-func GetComments(c *gin.Context, db postgres.PostgresInterface, broker broker.BrokerInterface, messageQueue memory.MessageQueue) {
+func GetComments(c *gin.Context, db postgres.PostgresInterface, broker broker.BrokerInterface, messageStore memory.MessageStoreInterface) {
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil || page < 1 {
 		page = 1
@@ -61,17 +60,9 @@ func GetComments(c *gin.Context, db postgres.PostgresInterface, broker broker.Br
 		return
 	}
 
-	time.Sleep(time.Millisecond * 100)
-	message := messageQueue.GetLastMessage()
-
-	if message == nil {
+	getUsersResponse, err := messageStore.ProcessPushUsers(getUsersRequest)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Комментарии не найдены"})
-		return
-	}
-	getUsersResponse, ok := message.(*pb.GetUsersResponse)
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
-		log.Println("Invalid response from message queue")
 		return
 	}
 

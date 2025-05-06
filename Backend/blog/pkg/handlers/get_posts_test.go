@@ -27,17 +27,17 @@ func TestGetPosts(t *testing.T) {
 	})
 	mockPostgres := new(postgres.MockPostgres)
 	mockBroker := new(broker.MockBroker)
-	mockMessageQueue := new(memory.MockMessageQueue)
+	mockMessageStore := new(memory.MockMessageStore)
 	r.GET("/posts", func(c *gin.Context) {
-		handlers.GetPosts(c, mockPostgres, mockBroker, mockMessageQueue)
+		handlers.GetPosts(c, mockPostgres, mockBroker, mockMessageStore)
 	})
 
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	mockBroker.On("PushUserFriend", mock.Anything).Return(nil)
-	mockMessageQueue.On("GetLastMessage").Return(&pb.GetUserFriendResponse{Ids: []int64{1, 2}, Id: 1}).Once()
+	mockMessageStore.On("ProcessPushUserFriend", mock.Anything).Return(pb.GetUserFriendResponse{Ids: []int64{1, 2}, Id: 1}, nil).Once()
 	mockPostgres.On("GetPosts", []int{1, 2}, 1).Return([]postgres.Post{{Id: 1, UserId: 1, Text: "Пост 1", Image: []byte{}, Time: &date}}, nil)
 	mockBroker.On("PushUsers", mock.Anything).Return(nil)
-	mockMessageQueue.On("GetLastMessage").Return(&pb.GetUsersResponse{
+	mockMessageStore.On("ProcessPushUsers", mock.Anything).Return(pb.GetUsersResponse{
 		Users: []*pb.GetUserResponse{
 			&pb.GetUserResponse{
 				Image: "",
@@ -53,7 +53,7 @@ func TestGetPosts(t *testing.T) {
 			},
 		},
 		Ids: []int64{1, 2},
-	}).Once()
+	}, nil).Once()
 
 	req, _ := http.NewRequest("GET", "/posts?page=1", nil)
 	req.Header.Set("Authorization", "Bearer testtoken")
@@ -64,7 +64,7 @@ func TestGetPosts(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	mockPostgres.AssertExpectations(t)
 	mockBroker.AssertExpectations(t)
-	mockMessageQueue.AssertExpectations(t)
+	mockMessageStore.AssertExpectations(t)
 
 	var actualResponse gin.H
 	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)
