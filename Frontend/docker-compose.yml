@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  zoomerok-auth:
+    build:
+      context: ./zoomerok-auth 
+      dockerfile: Dockerfile
+    restart: always
+    command: npm run build && npm run start
+    container_name: zoomerok_auth
+    networks:
+      - gateway_network
+    ports:
+      - "5173:5173"
+    volumes:
+      - auth_static:/app/auth
+
+  zoomerok-network:
+    build:
+      context: ./zoomerok-network
+      dockerfile: Dockerfile
+    restart: always
+    command: npm run dev
+    container_name: zoomerok_network
+    networks:
+      - gateway_network
+    ports:
+      - "3000:3000"
+    volumes:
+      - network_static:/app/network
+    
+
+networks:
+  gateway_network:
+    external: true
+
+volumes:
+  auth_static:
+  network_static:
