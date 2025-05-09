@@ -22,6 +22,22 @@ var (
 
 func run_http_server() {
 	router := router.SetupRouter(true)
+
+	// Добавлен CORS
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, PATCH, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Origin")
+		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	})
+
 	protected := router.Group("")
 	protected.Use(handlers.AuthMiddleware(postgres.ProductionPostgresInterface))
 	protected.PUT(config.Config.Prefix+"/accept_friend", func(c *gin.Context) {
