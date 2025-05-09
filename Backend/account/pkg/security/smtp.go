@@ -53,7 +53,6 @@ func (Smtp *RealSMTP) SendConfirmEmail(login, email string, cache caching.Cachin
 	cache.SetCacheConfirmationLink(login, code)
 	log.Println("code:", code)
 
-	return fmt.Errorf("ewr")
 	var subject string = "Подтверждение электронной почты ZoomerOk"
 	headers := []byte("From: " + config.Config.SmtpUsername + "\n" +
 		"To: " + email + "\n" +
