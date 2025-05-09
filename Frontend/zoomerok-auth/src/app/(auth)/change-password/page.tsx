@@ -21,7 +21,7 @@ export default function ChangePassPage() {
     setLoading(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/reqresetpass`,
+        `${process.env.NEXT_PUBLIC_API_URL}/account/reqresetpass`,
         {
           method: "POST",
           headers: {

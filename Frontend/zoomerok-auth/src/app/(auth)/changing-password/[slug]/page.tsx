@@ -24,7 +24,7 @@ export default function ChangingPassPage() {
       try {
         setLoading(true);
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/confirm_password/${initialSlug.current}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/account/confirm_password/${initialSlug.current}`,
           {
             method: "GET",
             headers: {

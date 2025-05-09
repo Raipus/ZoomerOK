@@ -31,7 +31,7 @@ export default function SignupPage() {
         showNotification("Пароли должны совпадать!");
       } else {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`,
+          `${process.env.NEXT_PUBLIC_API_URL}/account/signup`,
           {
             method: "POST",
             headers: {
