@@ -80,7 +80,9 @@ func Signup(c *gin.Context, db postgres.PostgresInterface, smtp security.SMTPInt
 		smtp.SendConfirmEmail(newSignupForm.Login, newSignupForm.Email, cache)
 		c.JSON(http.StatusOK, gin.H{
 			"token": token,
-		})
+			"image": redisUser.Image,
+			"name": redisUser.Name,
+    	})
 	} else {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Ошибка сервиса",

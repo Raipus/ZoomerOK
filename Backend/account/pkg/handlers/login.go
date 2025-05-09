@@ -46,8 +46,11 @@ func Login(c *gin.Context, db postgres.PostgresInterface, redis memory.RedisInte
 			ConfirmedEmail: user.ConfirmedEmail,
 		}
 		redis.SetAuthorization(redisAuthorization)
+		redisUser := redis.GetUser(user.Id)
 		c.JSON(http.StatusOK, gin.H{
 			"token": token,
-		})
+			"image": redisUser.Image,
+			"name": redisUser.Name,
+    	})
 	}
 }
