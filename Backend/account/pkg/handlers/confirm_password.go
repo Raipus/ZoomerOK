@@ -12,7 +12,6 @@ import (
 // @Description Позволяет пользователю подтвердить свое право на изменение пароля посредством перехода через соответствующую ссылку.
 // @Accept json
 // @Produce json
-// @Param Authorization header string true "Bearer {token}"
 // @Success 204 {object} gin.H {}
 // @Failure 404 {object} gin.H{"error": "User not found"}
 // @Router /confirm_password/:reset_link [put]

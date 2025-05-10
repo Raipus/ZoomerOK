@@ -51,9 +51,16 @@ func TestLogin(t *testing.T) {
 		Email:          user.Email,
 		ConfirmedEmail: user.ConfirmedEmail,
 	}
+	redisUser := memory.RedisUser{
+		UserId: user.Id,
+		Login:  user.Login,
+		Name:   user.Name,
+		Image:  "image",
+	}
 
 	mockPostgres.On("Login", loginData.LoginOrEmail, loginData.Password).Return(user, token, "")
 	mockRedis.On("SetAuthorization", redisAuthorization).Return()
+	mockRedis.On("GetUser", user.Id).Return(redisUser)
 
 	r.POST("/login", func(c *gin.Context) {
 		handlers.Login(c, mockPostgres, mockRedis)
@@ -73,13 +80,12 @@ func TestLogin(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	expectedResponse := gin.H{
-		"token": token,
-	}
 	var actualResponse gin.H
 	err = json.Unmarshal(w.Body.Bytes(), &actualResponse)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, actualResponse)
+	assert.Equal(t, token, actualResponse["token"])
+	assert.Equal(t, redisUser.Name, actualResponse["name"])
+	assert.Equal(t, redisUser.Image, actualResponse["image"])
 	mockPostgres.AssertExpectations(t)
 	mockRedis.AssertExpectations(t)
 }

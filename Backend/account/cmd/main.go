@@ -64,6 +64,12 @@ func run_http_server() {
 	protected.DELETE(config.Config.Prefix+"/user/:login", func(c *gin.Context) {
 		handlers.DeleteUser(c, postgres.ProductionPostgresInterface, memory.ProductionRedisInterface)
 	})
+	protected.GET(config.Config.Prefix+"/find_user", func(c *gin.Context) {
+		handlers.FindUser(c, postgres.ProductionPostgresInterface, memory.ProductionRedisInterface)
+	})
+	protected.GET(config.Config.Prefix+"/get_friends", func(c *gin.Context) {
+		handlers.GetFriends(c, memory.ProductionRedisInterface)
+	})
 	protected.GET(config.Config.Prefix+"/user/:login", func(c *gin.Context) {
 		handlers.GetUser(c, postgres.ProductionPostgresInterface)
 	})

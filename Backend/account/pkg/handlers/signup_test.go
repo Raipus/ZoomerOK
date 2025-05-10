@@ -87,13 +87,12 @@ func TestSignup(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	expectedResponse := gin.H{
-		"token": token,
-	}
 	var actualResponse gin.H
 	err = json.Unmarshal(w.Body.Bytes(), &actualResponse)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, actualResponse)
+	assert.Equal(t, token, actualResponse["token"])
+	assert.Equal(t, redisUser.Name, actualResponse["name"])
+	assert.Equal(t, redisUser.Image, actualResponse["image"])
 
 	mockPostgres.AssertExpectations(t)
 	mockSmtp.AssertExpectations(t)
