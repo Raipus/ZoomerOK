@@ -38,6 +38,11 @@ func (m *MockPostgres) GetPosts(userIds []int, page int) ([]Post, error) {
 	return args.Get(0).([]Post), args.Error(1)
 }
 
+func (m *MockPostgres) GetCountCommentsAndLikes(postIds []int) (map[int]int, map[int]int, error) {
+	args := m.Called(postIds)
+	return args.Get(0).(map[int]int), args.Get(1).(map[int]int), args.Error(2)
+}
+
 func (m *MockPostgres) GetComments(postId, page int) ([]Comment, error) {
 	args := m.Called(postId, page)
 	return args.Get(0).([]Comment), args.Error(1)

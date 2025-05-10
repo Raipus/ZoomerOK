@@ -9,6 +9,7 @@ type PostgresInterface interface {
 	DeleteComment(userId int, commentId int) error
 	GetPost(postId int) (*Post, error)
 	GetPosts(userIds []int, page int) ([]Post, error)
+	GetCountCommentsAndLikes(postIds []int) (map[int]int, map[int]int, error)
 	GetComments(postId, page int) ([]Comment, error)
 	Like(postId int, userId int) error
 }

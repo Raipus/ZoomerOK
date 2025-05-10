@@ -77,8 +77,10 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 	}
 
 	userIds := make(map[int64]bool)
+	postIds := make([]int, 0, len(posts))
 	for _, post := range posts {
 		userIds[int64(post.UserId)] = true
+		postIds = append(postIds, int(post.Id))
 	}
 
 	ids := make([]int64, 0, len(userIds))
@@ -112,6 +114,12 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 		userMap[int64(user.Id)] = user
 	}
 
+	commentCountMap, likeCountMap, err := db.GetCountCommentsAndLikes(postIds)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
+		return
+	}
+
 	var responsePosts []gin.H
 	for _, post := range posts {
 		user, exists := userMap[int64(post.UserId)]
@@ -131,6 +139,8 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 				"text":  post.Text,
 				"image": post.Image,
 				"time":  post.Time,
+				"number_of_comments": float64(commentCountMap[post.Id]),
+				"number_of_likes": float64(likeCountMap[post.Id]),
 			},
 		})
 	}

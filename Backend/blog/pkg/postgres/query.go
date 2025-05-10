@@ -75,6 +75,50 @@ func (Instance *RealPostgres) GetPosts(userIds []int, page int) ([]Post, error) 
 	return posts, nil
 }
 
+func (Instance *RealPostgres) GetCountCommentsAndLikes(postIds []int) (map[int]int, map[int]int, error) {
+	commentCountMap := make(map[int]int)
+	likeCountMap := make(map[int]int)
+
+	var commentCounts []struct {
+		PostId int
+		CommentCount int64
+	}
+
+	err := Instance.instance.Model(&Comment{}).
+		Select("post_id, count(*) as comment_count").
+		Where("post_id IN ?", postIds).
+		Group("post_id").
+		Scan(&commentCounts).Error
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, cc := range commentCounts {
+		commentCountMap[cc.PostId] = int(cc.CommentCount)
+	}
+
+	var likeCounts []struct {
+		PostId int
+		LikeCount int64
+	}
+
+	err = Instance.instance.Model(&Like{}).
+		Select("post_id, count(*) as like_count").
+		Where("post_id IN ?", postIds).
+		Group("post_id").
+		Scan(&likeCounts).Error
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, lc := range likeCounts {
+		likeCountMap[lc.PostId] = int(lc.LikeCount)
+	}
+
+	return commentCountMap, likeCountMap, nil
+}
+
 func (Instance *RealPostgres) GetComments(postId, page int) ([]Comment, error) {
 	var comments []Comment
 	offset := (page - 1) * config.Config.PageSize

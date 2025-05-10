@@ -60,6 +60,12 @@ func GetPost(c *gin.Context, db postgres.PostgresInterface, broker broker.Broker
 		return
 	}
 
+	commentCountMap, likeCountMap, err := db.GetCountCommentsAndLikes([]int{post.Id})
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"post": gin.H{
 			"user": gin.H{
@@ -73,6 +79,8 @@ func GetPost(c *gin.Context, db postgres.PostgresInterface, broker broker.Broker
 				"text":  post.Text,
 				"image": post.Image,
 				"time":  post.Time,
+				"number_of_comments": float64(commentCountMap[post.Id]),
+				"number_of_likes": float64(likeCountMap[post.Id]),
 			},
 		},
 	})

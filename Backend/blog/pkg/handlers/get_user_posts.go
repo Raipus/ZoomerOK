@@ -40,6 +40,17 @@ func GetUserPosts(c *gin.Context, db postgres.PostgresInterface) {
 		return
 	}
 
+	postIds := make([]int, 0, len(posts))
+	for _, post := range posts {
+		postIds = append(postIds, int(post.Id))
+	}
+
+	commentCountMap, likeCountMap, err := db.GetCountCommentsAndLikes(postIds)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
+		return
+	}
+
 	for _, post := range posts {
 		responsePosts = append(responsePosts, gin.H{
 			"body": gin.H{
@@ -47,6 +58,8 @@ func GetUserPosts(c *gin.Context, db postgres.PostgresInterface) {
 				"text":  post.Text,
 				"image": post.Image,
 				"time":  post.Time,
+				"number_of_comments": float64(commentCountMap[post.Id]),
+				"number_of_likes": float64(likeCountMap[post.Id]),
 			},
 		})
 	}

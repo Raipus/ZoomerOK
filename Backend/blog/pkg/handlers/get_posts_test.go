@@ -32,11 +32,16 @@ func TestGetPosts(t *testing.T) {
 		handlers.GetPosts(c, mockPostgres, mockBroker, mockMessageStore)
 	})
 
+	likeCountMap := make(map[int]int)
+	commentCountMap := make(map[int]int)
+	likeCountMap[1] = 5
+	commentCountMap[1] = 6
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	mockBroker.On("PushUserFriend", mock.Anything).Return(nil)
 	mockMessageStore.On("ProcessPushUserFriend", mock.Anything).Return(pb.GetUserFriendResponse{Ids: []int64{1, 2}, Id: 1}, nil).Once()
 	mockPostgres.On("GetPosts", []int{1, 2}, 1).Return([]postgres.Post{{Id: 1, UserId: 1, Text: "Пост 1", Image: []byte{}, Time: &date}}, nil)
 	mockBroker.On("PushUsers", mock.Anything).Return(nil)
+	mockPostgres.On("GetCountCommentsAndLikes", []int{1}).Return(commentCountMap, likeCountMap, nil)
 	mockMessageStore.On("ProcessPushUsers", mock.Anything).Return(pb.GetUsersResponse{
 		Users: []*pb.GetUserResponse{
 			&pb.GetUserResponse{
@@ -70,4 +75,18 @@ func TestGetPosts(t *testing.T) {
 	err := json.Unmarshal(w.Body.Bytes(), &actualResponse)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, actualResponse["posts"])
+
+	postsInterface, ok := actualResponse["posts"].([]interface{})
+	assert.True(t, ok)
+
+	if len(postsInterface) > 0 {
+		firstPost, ok := postsInterface[0].(map[string]interface{})
+		assert.True(t, ok)
+
+		body, ok := firstPost["body"].(map[string]interface{})
+		assert.True(t, ok)
+
+		assert.Equal(t, body["number_of_comments"], float64(6))
+		assert.Equal(t, body["number_of_likes"], float64(5))
+	}
 }
