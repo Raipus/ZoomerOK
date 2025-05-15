@@ -1,0 +1,129 @@
+version: '3'
+
+services:
+
+  # Blog Service
+  blog_server:
+    build:
+      context: ./blog
+    container_name: blog_server
+    command: ./blog
+    restart: always
+    ports:
+      - 8081:8081
+    networks:
+      - microservice_network
+      - server_db
+    depends_on:
+      - kafka
+      - blog_db
+
+  blog_db:
+    image: postgres
+    restart: always
+    env_file:
+      - ./blog/pkg/config/envs/prod.db.env
+    volumes:
+      - blog_data:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+    networks:
+      - server_db
+
+  # Account Service
+  account_server:
+    build:
+      context: ./account
+    container_name: account_server
+    command: ./account
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - microservice_network
+      - server_db
+      - server_redis
+      - kafka_network # Added kafka_network
+    depends_on:
+      - account_db
+      - account_redis
+      - kafka
+
+  account_db:
+    image: postgres
+    restart: always
+    env_file:
+      - ./account/pkg/config/envs/prod.db.env
+    volumes:
+      - account_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - server_db
+
+  account_redis:
+    image: redis:6
+    restart: always
+    env_file:
+      - ./account/pkg/config/envs/redis.env
+    volumes:
+      - redis_data:/data
+    ports:
+      - 6379:6379
+    networks:
+      - server_redis
+
+  # Gateway Service
+  gateway_nginx:
+    build:
+      context: ./gateway
+    restart: always
+    ports:
+      - 1337:80
+    networks:
+      - microservice_network
+    command: ["sh", "-c", "sleep 5 && nginx -g 'daemon off;'"]
+
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    restart: always
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_MAX_CLIENT_CNXNS: 60
+    networks:
+      - kafka_network
+
+  kafka:
+    image: wurstmeister/kafka:latest
+    restart: always
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:9094
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    hostname: kafka
+    networks:
+      - kafka_network
+      - microservice_network
+
+volumes:
+  blog_data:
+  account_data:
+  redis_data:
+
+networks:
+  microservice_network:
+  server_db:
+  server_redis:
+  kafka_network:

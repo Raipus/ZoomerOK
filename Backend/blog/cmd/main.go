@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"strconv"
-	"time"
 
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker"
 	"github.com/Raipus/ZoomerOK/blog/pkg/config"
@@ -47,17 +46,16 @@ func run_http_server() {
 	protected.POST(config.Config.Prefix+"post/:post_id/like", func(c *gin.Context) {
 		handlers.Like(c, postgres.ProductionPostgresInterface)
 	})
-	if err := router.Run(http_server); err != nil {
-		log.Fatal("Failed to run server:", err)
-	}
+	go func() {
+		if err := router.Run(http_server); err != nil {
+			log.Fatal("Failed to run server:", err)
+		}
+	}()
 	log.Println("Server is running at:", http_server)
 }
 
 func main() {
-	go run_http_server()
-	time.Sleep(time.Second * 1)
+	run_http_server()
 	go broker.ProductionBrokerInterface.Listen()
-	for {
-		time.Sleep(time.Second)
-	}
+	select {}
 }

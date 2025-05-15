@@ -150,6 +150,7 @@ func (r *RealRedis) DeleteUserFriend(userId, userFriendId int) {
 func (r *RealRedis) GetAuthorization(token string) RedisAuthorization {
 	RedisMu.Lock()
 	defer RedisMu.Unlock()
+	log.Println("token", token)
 	log.Println(333)
 	log.Println(324)
 	userData, err := r.client.HMGet(context.Background(), "auth_"+token, "id", "login", "email", "confirmed_email").Result()

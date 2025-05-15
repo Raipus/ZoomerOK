@@ -38,7 +38,6 @@ func initReader() *kafka.Reader {
 		kafkaConfig := kafka.ReaderConfig{
 			Brokers:         []string{config.Config.KafkaBrokerUrl},
 			Topic:           config.Config.KafkaReaderTopic,
-			GroupID:         "account-service",
 			MinBytes:        1,
 			MaxBytes:        1024 * 1024,
 			MaxWait:         1 * time.Second,
