@@ -26,7 +26,7 @@ func Like(c *gin.Context, db postgres.PostgresInterface) {
 
 	postId, err := strconv.Atoi(postIdStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат ID комментария"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат ID поста"})
 		return
 	}
 
