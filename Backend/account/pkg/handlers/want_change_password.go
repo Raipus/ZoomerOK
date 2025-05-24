@@ -40,7 +40,7 @@ func WantChangePassword(c *gin.Context, db postgres.PostgresInterface, smtp secu
 		return
 	}
 
-	if err := smtp.SendChangePassword(user.Name, user.Email, cache); err != nil {
+	if err := smtp.SendChangePassword(user.Login, user.Email, cache); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Email не найден",
 		})

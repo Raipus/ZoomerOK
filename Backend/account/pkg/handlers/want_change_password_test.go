@@ -43,7 +43,7 @@ func TestWantChangePassword(t *testing.T) {
 	}
 
 	mockPostgres.On("GetUserByEmail", wantChangePasswordData.Email).Return(user)
-	mockSmtp.On("SendChangePassword", user.Name, user.Email, mockCache).Return(nil)
+	mockSmtp.On("SendChangePassword", user.Login, user.Email, mockCache).Return(nil)
 	r.POST("/want_change_password", func(c *gin.Context) {
 		handlers.WantChangePassword(c, mockPostgres, mockSmtp, mockCache)
 	})
