@@ -17,6 +17,22 @@ var http_server = config.Config.Host + ":" + strconv.Itoa(config.Config.HttpPort
 
 func run_http_server() {
 	router := router.SetupRouter(true)
+
+	// Добавлен CORS
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, PATCH, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Origin")
+		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	})
+	
 	protected := router.Group("")
 	protected.Use(handlers.AuthMiddleware(broker.ProductionBrokerInterface, memory.ProductionMessageStore))
 	protected.POST(config.Config.Prefix+"/post/:post_id/create_comment", func(c *gin.Context) {
@@ -43,7 +59,7 @@ func run_http_server() {
 	protected.GET(config.Config.Prefix+"/user/:id/posts", func(c *gin.Context) {
 		handlers.GetUserPosts(c, postgres.ProductionPostgresInterface)
 	})
-	protected.POST(config.Config.Prefix+"post/:post_id/like", func(c *gin.Context) {
+	protected.POST(config.Config.Prefix+"/post/:post_id/like", func(c *gin.Context) {
 		handlers.Like(c, postgres.ProductionPostgresInterface)
 	})
 	go func() {
