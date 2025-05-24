@@ -10,7 +10,6 @@ import (
 
 // ChangePasswordForm представляет данные, необходимые для изменения пароля пользователя.
 type ChangePasswordForm struct {
-	Email       string `json:"email"`    // Email, электронная почта пользователя.
 	NewPassword string `json:"password"` // NewPassword, новый пароль пользователя.
 }
 
@@ -35,20 +34,25 @@ func ChangePassword(c *gin.Context, db postgres.PostgresInterface, cache caching
 		return
 	}
 
-	user := db.GetUserByEmail(newChangePasswordForm.Email)
-	if postgres.CompareUsers(user, postgres.User{}) {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Пользователь не найден",
-		})
-		return
-	}
-
-	if err := db.ChangePassword(&user, newChangePasswordForm.NewPassword); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Ошибка сервера",
-		})
+	login := cache.GetCacheResetLink(resetLink)
+	if login == "" {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 	} else {
-		cache.DeleteCacheResetLink(resetLink)
-		c.JSON(http.StatusNoContent, gin.H{})
+		user := db.GetUserByLogin(login)
+		if postgres.CompareUsers(user, postgres.User{}) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Пользователь не найден",
+			})
+			return
+		}
+
+		if err := db.ChangePassword(&user, newChangePasswordForm.NewPassword); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Ошибка сервера",
+			})
+		} else {
+			cache.DeleteCacheResetLink(resetLink)
+			c.JSON(http.StatusNoContent, gin.H{})
+		}
 	}
 }
