@@ -37,7 +37,7 @@ func GetFriends(c *gin.Context, redis memory.RedisInterface) {
 	var responseUsers []gin.H
 	for _, user := range users {
 		responseUsers = append(responseUsers, gin.H{
-			"user": gin.H{
+			"friend": gin.H{
 				"id":    user.UserId,
 				"login": user.Login,
 				"name":  user.Name,

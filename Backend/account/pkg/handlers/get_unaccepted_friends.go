@@ -31,7 +31,7 @@ func GetUnacceptedFriends(c *gin.Context, db postgres.PostgresInterface) {
 	var responseUsers []gin.H
 	for _, user := range unacceptedFriends {
 		responseUsers = append(responseUsers, gin.H{
-			"unaccepted_friend": gin.H{
+			"friend": gin.H{
 				"id":    user.Id,
 				"login": user.Login,
 				"name":  user.Name,
