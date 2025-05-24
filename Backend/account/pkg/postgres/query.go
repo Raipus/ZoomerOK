@@ -197,7 +197,7 @@ func (Instance *RealPostgres) GetUnacceptedFriends(userId int) ([]User, error) {
 	var unacceptedFriends []User
 	for _, friend := range friends {
 		var user User
-		if err := Instance.instance.First(&user, friend.User2Id).Error; err == nil {
+		if err := Instance.instance.First(&user, friend.User1Id).Error; err == nil {
 			unacceptedFriends = append(unacceptedFriends, user)
 		}
 	}
