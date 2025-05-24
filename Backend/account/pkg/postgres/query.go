@@ -186,3 +186,36 @@ func (Instance *RealPostgres) DeleteFriendRequest(id1 int, id2 int) error {
 	Instance.instance.Delete(&friend)
 	return nil
 }
+
+func (Instance *RealPostgres) GetUnacceptedFriends(userId int) ([]User, error) {
+	var friends []Friend
+	err := Instance.instance.Where("user1_id = ? AND accepted = ?", userId, false).Find(&friends).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var unacceptedFriends []User
+	for _, friend := range friends {
+		var user User
+		if err := Instance.instance.First(&user, friend.User2Id).Error; err == nil {
+			unacceptedFriends = append(unacceptedFriends, user)
+		}
+	}
+	return unacceptedFriends, nil
+}
+
+func (Instance *RealPostgres) CheckUserFriend(userId int, friendId int) (string, error) {
+	var friend Friend
+	err := Instance.instance.Where("(user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)", userId, friendId, friendId, userId).First(&friend).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return "дружбы нет", nil
+		}
+		return "", err
+	}
+
+	if friend.Accepted {
+		return "дружба существует", nil
+	}
+	return "заявка отправлена", nil
+}

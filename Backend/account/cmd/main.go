@@ -69,6 +69,9 @@ func run_http_server() {
 	protected.GET(config.Config.Prefix+"/get_friends", func(c *gin.Context) {
 		handlers.GetFriends(c, memory.ProductionRedisInterface)
 	})
+	protected.GET(config.Config.Prefix+"/get_unaccepted_friends", func(c *gin.Context) {
+		handlers.GetUnacceptedFriends(c, postgres.ProductionPostgresInterface)
+	})
 	protected.GET(config.Config.Prefix+"/user/:login", func(c *gin.Context) {
 		handlers.GetUser(c, postgres.ProductionPostgresInterface)
 	})

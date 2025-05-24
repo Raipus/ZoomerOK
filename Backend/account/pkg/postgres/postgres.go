@@ -19,6 +19,8 @@ type PostgresInterface interface {
 	ExistFriendRequest(id1 int, id2 int) (Friend, error)
 	CheckUserExist(id1 int, id2 int) error
 	DeleteFriendRequest(id1 int, id2 int) error
+	GetUnacceptedFriends(userId int) ([]User, error)
+	CheckUserFriend(userId, friendId int) (string, error)
 }
 
 var ProductionPostgresInterface PostgresInterface = &RealPostgres{instance: initPostgres()}

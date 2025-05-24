@@ -86,3 +86,13 @@ func (m *MockPostgres) CheckUserExist(id1 int, id2 int) error {
 	args := m.Called(id1, id2)
 	return args.Error(0)
 }
+
+func (m *MockPostgres) GetUnacceptedFriends(userId int) ([]User, error) {
+	args := m.Called(userId)
+	return args.Get(0).([]User), args.Error(1)
+}
+
+func (m *MockPostgres) CheckUserFriend(userId, friendId int) (string, error) {
+	args := m.Called(userId, friendId)
+	return args.String(0), args.Error(1)
+}
