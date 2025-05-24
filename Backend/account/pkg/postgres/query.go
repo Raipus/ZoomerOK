@@ -189,7 +189,7 @@ func (Instance *RealPostgres) DeleteFriendRequest(id1 int, id2 int) error {
 
 func (Instance *RealPostgres) GetUnacceptedFriends(userId int) ([]User, error) {
 	var friends []Friend
-	err := Instance.instance.Where("user1_id = ? AND accepted = ?", userId, false).Find(&friends).Error
+	err := Instance.instance.Where("user2_id = ? AND accepted = ?", userId, false).Find(&friends).Error
 	if err != nil {
 		return nil, err
 	}
