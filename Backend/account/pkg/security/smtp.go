@@ -40,7 +40,7 @@ func initSMTP() smtp.Auth {
 
 func (Smtp *RealSMTP) SendConfirmEmail(login, email string, cache caching.CachingInterface) error {
 	code := GenerateLink()
-	var confirmationLink string = config.Config.FrontendLink + "/confirm_email/" + code
+	var confirmationLink string = config.Config.FrontendLink + "/confirming-email/" + code
 	confirmEmailMessage := []byte(fmt.Sprintf(
 		"Здравствуйте, %s!\n\n"+
 			"Спасибо за регистрацию на нашем сайте. Чтобы активировать вашу учетную запись, пожалуйста, подтвердите свой адрес электронной почты, перейдя по следующей ссылке:\n\n"+
@@ -66,7 +66,7 @@ func (Smtp *RealSMTP) SendConfirmEmail(login, email string, cache caching.Cachin
 
 func (Smtp *RealSMTP) SendChangePassword(login, email string, cache caching.CachingInterface) error {
 	code := GenerateLink()
-	var resetLink string = config.Config.FrontendLink + "/confirm_password/" + code
+	var resetLink string = config.Config.FrontendLink + "/changing-password/" + code
 
 	changePasswordMessage := []byte(fmt.Sprintf(
 		"Здравствуйте, %s!\n\n"+
