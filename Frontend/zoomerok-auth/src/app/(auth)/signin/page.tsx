@@ -9,9 +9,7 @@ import ErrorNotification from "@/component/ErrorNotification";
 import { useErrorNotification } from "@/hooks/useErrorNotification";
 
 interface IFormStateLogin {
-  somelogin: string;
-  email: string;
-  login: string;
+  login_or_email: string;
   password: string;
 }
 
@@ -25,14 +23,6 @@ export default function SigninPage() {
   const onSubmit: SubmitHandler<IFormStateLogin> = async (data) => {
     setLoading(true);
     try {
-      if (data.somelogin.includes("@")) {
-        const { somelogin, login, ...dataWithEmail } = data;
-        dataWithEmail.email = somelogin;
-      } else {
-        const { somelogin, email, ...dataWithEmail } = data;
-        dataWithEmail.login = somelogin;
-      }
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/account/login`,
         {
@@ -50,7 +40,7 @@ export default function SigninPage() {
         showNotification(data1.message || "Произошла ошибка");
         return;
       } else {
-        setCookie("access_token", data1.accessToken, { maxAge: 60 * 60 });
+        setCookie("access_token", data1.token, { maxAge: 60 * 60 });
         router.push(`${process.env.NEXT_PUBLIC_NETWORK_URL}`);
       }
     } catch (error) {
@@ -119,7 +109,7 @@ export default function SigninPage() {
                         className="rounded-[60px] text-gray-950 text-[22px] font-[800] bg-white mt-[34px] h-[61px] w-[368px] px-[30px]"
                         placeholder="Логин / Почта"
                         type="text"
-                        {...register("somelogin", { required: true })}
+                        {...register("login_or_email", { required: true })}
                       />
                       <input
                         className="rounded-[60px] text-gray-950 text-[22px] font-[800] bg-white mt-[40px] h-[61px] w-[368px] px-[30px]"
