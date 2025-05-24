@@ -5,7 +5,7 @@ import ErrorNotification from "@/component/ErrorNotification";
 import { useErrorNotification } from "@/hooks/useErrorNotification";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { setCookie } from "cookies-next";
+import { getToken } from "@/utils/auth/getToken";
 
 export default function ChangingPassPage() {
   const router = useRouter();
@@ -18,30 +18,30 @@ export default function ChangingPassPage() {
   const requestSent = useRef(false);
 
   useEffect(() => {
-    const fetchChangingPass = async () => {
+    const fetchConfirmEmail = async () => {
       if (requestSent.current) return;
       requestSent.current = true;
+      const accessToken = await getToken();
 
       try {
         setLoading(true);
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/account/confirm_email/${initialSlug.current}`,
           {
-            method: "GET",
+            method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${accessToken}`,
             },
           }
         );
 
-        const data1 = await response.json();
-
         if (!response.ok) {
+          const data1 = await response.json();
           setError1(true);
           showNotification(data1.message || "Произошла ошибка");
           return;
         } else {
-          setCookie("access_token", data1.accessToken, { maxAge: 60 * 60 });
           router.push(`${process.env.NEXT_PUBLIC_NETWORK_URL}`);
         }
       } catch (error) {
@@ -54,8 +54,8 @@ export default function ChangingPassPage() {
       }
     };
 
-    fetchChangingPass();
-  }, []);
+    fetchConfirmEmail();
+  }, [router, showNotification]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
