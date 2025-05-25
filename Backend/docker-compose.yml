@@ -13,7 +13,7 @@ services:
       - 8081:8081
     networks:
       - microservice_network
-      - server_db
+      - blog_server_db
       - kafka_network
     depends_on:
       - kafka
@@ -29,7 +29,7 @@ services:
     ports:
       - 5433:5432
     networks:
-      - server_db
+      - blog_server_db
 
   # Account Service
   account_server:
@@ -42,8 +42,7 @@ services:
       - 8080:8080
     networks:
       - microservice_network
-      - server_db
-      - server_redis
+      - account_server_db
       - kafka_network
     depends_on:
       - account_db
@@ -60,7 +59,7 @@ services:
     ports:
       - 5432:5432
     networks:
-      - server_db
+      - account_server_db
 
   account_redis:
     image: redis:6
@@ -72,7 +71,7 @@ services:
     ports:
       - 6379:6379
     networks:
-      - server_redis
+      - account_server_db
 
   # Gateway Service
   gateway_nginx:
@@ -126,6 +125,6 @@ volumes:
 
 networks:
   microservice_network:
-  server_db:
-  server_redis:
+  blog_server_db:
+  account_server_db:
   kafka_network:
