@@ -25,9 +25,14 @@ func TestAcceptFriend(t *testing.T) {
 		FriendUserId: 2,
 	}
 
-	redisUserFriend := memory.RedisUserFriend{
+	redisUserFriendFromMyUserId := memory.RedisUserFriend{
 		UserId:    userId,
 		FriendIds: []int{acceptFriendData.FriendUserId},
+	}
+
+	redisUserFriendFromNotMyUserId := memory.RedisUserFriend{
+		UserId:    acceptFriendData.FriendUserId,
+		FriendIds: []int{userId},
 	}
 
 	r.Use(func(c *gin.Context) {
@@ -36,7 +41,8 @@ func TestAcceptFriend(t *testing.T) {
 	})
 
 	mockPostgres.On("AcceptFriendRequest", userId, acceptFriendData.FriendUserId).Return(nil)
-	mockRedis.On("AddUserFriend", redisUserFriend).Return(nil)
+	mockRedis.On("AddUserFriend", redisUserFriendFromMyUserId).Return(nil)
+	mockRedis.On("AddUserFriend", redisUserFriendFromNotMyUserId).Return(nil)
 
 	jsonData, err := json.Marshal(acceptFriendData)
 	if err != nil {

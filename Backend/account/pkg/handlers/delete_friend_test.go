@@ -32,6 +32,7 @@ func TestDeleteFriend(t *testing.T) {
 
 	mockPostgres.On("DeleteFriendRequest", userId, deleteFriendData.FriendUserId).Return(nil)
 	mockRedis.On("DeleteUserFriend", userId, deleteFriendData.FriendUserId).Return()
+	mockRedis.On("DeleteUserFriend", deleteFriendData.FriendUserId, userId).Return()
 
 	jsonData, err := json.Marshal(deleteFriendData)
 	if err != nil {

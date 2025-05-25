@@ -52,11 +52,16 @@ func AcceptFriend(c *gin.Context, db postgres.PostgresInterface, redis memory.Re
 		return
 	}
 
-	redisUserFriend := memory.RedisUserFriend{
+	redisUserFriendFromMyUserId := memory.RedisUserFriend{
 		UserId:    userId,
 		FriendIds: []int{newAcceptFriendForm.FriendUserId},
 	}
-	redis.AddUserFriend(redisUserFriend)
+	redisUserFriendFromNotMyUserId := memory.RedisUserFriend{
+		UserId:    newAcceptFriendForm.FriendUserId,
+		FriendIds: []int{userId},
+	}
+	redis.AddUserFriend(redisUserFriendFromMyUserId)
+	redis.AddUserFriend(redisUserFriendFromNotMyUserId)
 
 	c.JSON(http.StatusNoContent, gin.H{})
 }

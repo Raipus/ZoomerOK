@@ -51,7 +51,7 @@ func TestGetUnacceptedFriends(t *testing.T) {
 	expectedResponse := gin.H{
 		"unaccepted_friends": []interface{}{
 			map[string]interface{}{
-				"unaccepted_friend": map[string]interface{}{
+				"friend": map[string]interface{}{
 					"id":    float64(1),
 					"image": nil,
 					"login": "testuser",

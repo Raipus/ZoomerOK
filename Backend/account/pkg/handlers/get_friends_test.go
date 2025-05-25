@@ -56,7 +56,7 @@ func TestGetFriends(t *testing.T) {
 	expectedResponse := gin.H{
 		"users": []interface{}{
 			map[string]interface{}{
-				"user": map[string]interface{}{
+				"friend": map[string]interface{}{
 					"id":    float64(1),
 					"image": "image",
 					"login": "testuser",
@@ -64,7 +64,7 @@ func TestGetFriends(t *testing.T) {
 				},
 			},
 			map[string]interface{}{
-				"user": map[string]interface{}{
+				"friend": map[string]interface{}{
 					"id":    float64(2),
 					"image": "image1",
 					"login": "testuser1",

@@ -53,5 +53,6 @@ func DeleteFriend(c *gin.Context, db postgres.PostgresInterface, redis memory.Re
 	}
 
 	redis.DeleteUserFriend(userId, deleteFriendForm.FriendUserId)
+	redis.DeleteUserFriend(deleteFriendForm.FriendUserId, userId)
 	c.JSON(http.StatusNoContent, gin.H{})
 }
