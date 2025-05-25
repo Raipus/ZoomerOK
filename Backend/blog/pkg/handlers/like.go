@@ -44,10 +44,13 @@ func Like(c *gin.Context, db postgres.PostgresInterface) {
 	}
 
 	userId := int(userIdFloat)
-	if err := db.Like(userId, postId); err != nil {
+	liked, err := db.Like(userId, postId)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка сервиса"})
 		return
 	}
 
-	c.JSON(http.StatusNoContent, nil)
+	c.JSON(http.StatusOK, gin.H{
+		"liked": liked,
+	})
 }

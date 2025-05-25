@@ -11,7 +11,7 @@ type PostgresInterface interface {
 	GetPosts(userIds []int, page int) ([]Post, error)
 	GetCountCommentsAndLikes(postIds []int) (map[int]int, map[int]int, error)
 	GetComments(postId, page int) ([]Comment, error)
-	Like(postId int, userId int) error
+	Like(postId int, userId int) (bool, error)
 }
 
 var ProductionPostgresInterface PostgresInterface = &RealPostgres{instance: initPostgres()}

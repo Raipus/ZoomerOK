@@ -132,12 +132,12 @@ func (Instance *RealPostgres) GetComments(postId, page int) ([]Comment, error) {
 	return comments, nil
 }
 
-func (Instance *RealPostgres) Like(userId int, postId int) error {
+func (Instance *RealPostgres) Like(userId int, postId int) (bool, error) {
 	var like Like
 	if err := Instance.instance.Where("user_id = ? AND post_id = ?", userId, postId).First(&like).Error; err != nil {
 		newLike := Like{PostId: postId, UserId: userId}
-		return Instance.instance.Create(&newLike).Error
+		return true, Instance.instance.Create(&newLike).Error
 	} else {
-		return Instance.instance.Delete(&like).Error
+		return false, Instance.instance.Delete(&like).Error
 	}
 }

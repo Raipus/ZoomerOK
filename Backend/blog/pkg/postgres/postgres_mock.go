@@ -48,7 +48,7 @@ func (m *MockPostgres) GetComments(postId, page int) ([]Comment, error) {
 	return args.Get(0).([]Comment), args.Error(1)
 }
 
-func (m *MockPostgres) Like(postId int, userId int) error {
+func (m *MockPostgres) Like(postId int, userId int) (bool, error) {
 	args := m.Called(postId, userId)
-	return args.Error(0)
+	return args.Bool(0), args.Error(1)
 }

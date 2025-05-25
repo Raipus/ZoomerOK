@@ -26,7 +26,7 @@ func TestLike(t *testing.T) {
 	})
 
 	postId := 456
-	mockPostgres.On("Like", 1, postId).Return(nil)
+	mockPostgres.On("Like", 1, postId).Return(true, nil)
 
 	req, _ := http.NewRequest("POST", "/post/"+strconv.Itoa(postId)+"/like", nil)
 	req.Header.Set("Authorization", "Bearer testtoken")
@@ -34,6 +34,6 @@ func TestLike(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusNoContent, w.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
 	mockPostgres.AssertExpectations(t)
 }
