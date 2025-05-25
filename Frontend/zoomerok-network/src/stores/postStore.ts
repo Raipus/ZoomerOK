@@ -3,6 +3,7 @@ import { PostsApi, type Post, type Comment } from '@/services/api/posts'
 import { useAuthStore } from './authStore'
 
 interface PostsState {
+  userPosts: Post[],
   posts: Post[]
   currentPost: Post | null
   comments: Comment[]
@@ -88,16 +89,20 @@ export const usePostsStore = defineStore('posts', {
         }
 
         this.posts.unshift(tempPost)
+        this.userPosts.unshift(tempPost)
 
         const realPostId = await PostsApi.createPost(text, image)
         const realPost = await PostsApi.getPost(realPostId)
 
         const index = this.posts.findIndex((p) => p.id === tempPost.id)
         this.posts.splice(index, 1, realPost)
+
+        const index1 = this.userPosts.findIndex((p) => p.id === tempPost.id)
+        this.userPosts.splice(index1, 1, realPost)
       } catch (error) {
-        console.log('ID:', id, 'Posts:', this.posts)
         if (id !== null && Array.isArray(this.posts)) {
           this.posts = this.posts.filter((p) => p.id !== id)
+          this.userPosts = this.userPosts.filter((p) => p.id !== id)
         }
         throw error
       }
