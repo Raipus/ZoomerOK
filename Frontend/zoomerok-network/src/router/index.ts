@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 import { authGuard } from './guards'
 
 const router = createRouter({
@@ -7,21 +6,26 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      redirect: `/news`,
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/news',
+      name: 'News',
+      component: () => import('../views/NewsView.vue'),
+    },
+    {
+      path: '/profile/:login',
+      name: 'Profile',
+      component: () => import('../views/ProfileView.vue'),
+    },
+    {
+      path: '/friends',
+      name: 'Friends',
+      component: () => import('../views/FriendsView.vue'),
     },
   ],
 })
 
-// Отключен гард на время dev
-// router.beforeEach(authGuard)
+router.beforeEach(authGuard)
 
 export default router
