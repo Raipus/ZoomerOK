@@ -70,6 +70,8 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 		intIds[i] = int(id)
 	}
 
+	intIds = append(intIds, userId)
+
 	posts, err := db.GetPosts(intIds, page)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Посты не найдены"})
@@ -135,12 +137,12 @@ func GetPosts(c *gin.Context, db postgres.PostgresInterface, broker broker.Broke
 				"image": user.Image,
 			},
 			"body": gin.H{
-				"id":    float64(post.Id),
-				"text":  post.Text,
-				"image": post.Image,
-				"time":  post.Time,
+				"id":                 float64(post.Id),
+				"text":               post.Text,
+				"image":              post.Image,
+				"time":               post.Time,
 				"number_of_comments": float64(commentCountMap[post.Id]),
-				"number_of_likes": float64(likeCountMap[post.Id]),
+				"number_of_likes":    float64(likeCountMap[post.Id]),
 			},
 		})
 	}

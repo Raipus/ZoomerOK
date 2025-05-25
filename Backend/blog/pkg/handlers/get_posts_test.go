@@ -20,7 +20,7 @@ import (
 
 func TestGetPosts(t *testing.T) {
 	r := router.SetupRouter(false)
-	userId := 1
+	userId := 3
 	r.Use(func(c *gin.Context) {
 		c.Set("user_id", float64(userId))
 		c.Next()
@@ -39,7 +39,7 @@ func TestGetPosts(t *testing.T) {
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	mockBroker.On("PushUserFriend", mock.Anything).Return(nil)
 	mockMessageStore.On("ProcessPushUserFriend", mock.Anything).Return(pb.GetUserFriendResponse{Ids: []int64{1, 2}, Id: 1}, nil).Once()
-	mockPostgres.On("GetPosts", []int{1, 2}, 1).Return([]postgres.Post{{Id: 1, UserId: 1, Text: "Пост 1", Image: []byte{}, Time: &date}}, nil)
+	mockPostgres.On("GetPosts", []int{1, 2, 3}, 1).Return([]postgres.Post{{Id: 1, UserId: 1, Text: "Пост 1", Image: []byte{}, Time: &date}}, nil)
 	mockBroker.On("PushUsers", mock.Anything).Return(nil)
 	mockPostgres.On("GetCountCommentsAndLikes", []int{1}).Return(commentCountMap, likeCountMap, nil)
 	mockMessageStore.On("ProcessPushUsers", mock.Anything).Return(pb.GetUsersResponse{
