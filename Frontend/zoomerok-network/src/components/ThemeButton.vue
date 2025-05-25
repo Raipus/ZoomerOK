@@ -11,7 +11,7 @@ const toggleDark = useToggle(isDark)
 </script>
 
 <template>
-  <button @click="toggleDark()">
+  <button @click="toggleDark()" class="hover:scale-110 duration-200">
     <v-fade-transition>
       <v-avatar v-if="isDark" color="#D9D9D9" size="45" style="position: absolute; z-index: 99">
         <v-icon icon="dark_mode" />

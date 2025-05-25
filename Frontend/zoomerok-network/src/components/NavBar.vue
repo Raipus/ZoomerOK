@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import { useAccountStore } from '@/stores/accountStore'
-import { storeToRefs } from 'pinia'
 import ThemeButton from './ThemeButton.vue'
+import Cookies from 'js-cookie'
 
-const userStore = useAccountStore()
-const { isAuthenticated } = storeToRefs(userStore)
+defineProps<{ userStore: any }>()
 
 const logout = () => {
-  //userStore.logout()
+  const authUrl = import.meta.env.VITE_AUTH_URL
+  Cookies.remove('access_token')
+  window.location.replace(`${authUrl}/signin`)
 }
 </script>
 
 <template>
-  <!-- Условие отключено на время dev -->
-  <nav v-if="!isAuthenticated" className="h-2">
+  <nav>
     <div class="navdiv">
       <div class="logodiv">
         <v-avatar color="#D9D9D9" size="45">
@@ -22,17 +21,17 @@ const logout = () => {
         </v-avatar>
       </div>
       <div class="linksdiv">
-        <router-link to="/news">
+        <router-link to="/news" class="hover:scale-110 duration-200">
           <v-avatar color="#D9D9D9" size="45">
             <v-icon alt="John" icon="newspaper"></v-icon>
           </v-avatar>
         </router-link>
-        <router-link to="/my_page">
+        <router-link :to="`/profile/${userStore.login}`" class="hover:scale-110 duration-200">
           <v-avatar color="#D9D9D9" size="45">
             <v-icon icon="home"></v-icon>
           </v-avatar>
         </router-link>
-        <router-link to="/friends">
+        <router-link to="/friends" class="hover:scale-110 duration-200">
           <v-avatar color="#D9D9D9" size="45">
             <v-icon icon="people_alt"></v-icon>
           </v-avatar>
@@ -40,13 +39,13 @@ const logout = () => {
       </div>
       <div class="accountdiv">
         <ThemeButton />
-        <button @click="logout">
+        <button @click="logout" class="hover:scale-110 duration-200">
           <v-hover v-slot="{ isHovering, props }">
             <div v-bind="props">
               <v-fade-transition>
                 <v-avatar
                   v-if="isHovering"
-                  color="#acacac"
+                  color="#D9D9D9"
                   size="45"
                   style="position: absolute; z-index: 99"
                 >
@@ -54,7 +53,7 @@ const logout = () => {
                 </v-avatar>
               </v-fade-transition>
               <v-avatar color="#D9D9D9" size="45">
-                <v-icon icon="person" />
+                <img :src="`data:image/jpg;base64,${userStore.userData.image}`" alt="avatar" />
               </v-avatar>
             </div>
           </v-hover>
