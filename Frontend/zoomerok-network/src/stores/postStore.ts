@@ -125,6 +125,7 @@ export const usePostsStore = defineStore('posts', {
     async toggleLike(postId: number) {
       try {
         await PostsApi.likePost(postId)
+
         const post = this.posts.find((p) => p.body.id === postId)
         if (post) {
           if (post.body.isLiked === true) {
@@ -133,6 +134,17 @@ export const usePostsStore = defineStore('posts', {
           } else {
             post.body.number_of_likes += 1
             post.body.isLiked = true
+          }
+        }
+
+        const post1 = this.userPosts.find((p) => p.body.id === postId)
+        if (post1) {
+          if (post1.body.isLiked === true) {
+            post1.body.number_of_likes -= 1
+            post1.body.isLiked = false
+          } else {
+            post1.body.number_of_likes += 1
+            post1.body.isLiked = true
           }
         }
       } catch (error) {
