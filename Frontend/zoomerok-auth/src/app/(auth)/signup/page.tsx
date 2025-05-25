@@ -47,7 +47,7 @@ export default function SignupPage() {
           showNotification(data1.message || "Произошла ошибка");
           return;
         } else {
-          setCookie("access_token", data1.accessToken, { maxAge: 60 * 60 });
+          setCookie("access_token", data1.token, { maxAge: 60 * 60 });
           router.push("/confirm-email");
         }
       }
