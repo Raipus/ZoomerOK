@@ -1,5 +1,3 @@
-import './assets/main.css'
-
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
@@ -12,10 +10,6 @@ import * as directives from 'vuetify/directives'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import { aliases, md } from 'vuetify/iconsets/md'
 
-const app = createApp(App)
-
-const pinia = createPinia()
-
 const vuetify = createVuetify({
   icons: {
     defaultSet: 'md',
@@ -27,6 +21,12 @@ const vuetify = createVuetify({
   components,
   directives,
 })
+
+import './assets/main.css'
+
+const app = createApp(App)
+
+const pinia = createPinia()
 
 app.use(pinia).use(vuetify).use(router)
 
