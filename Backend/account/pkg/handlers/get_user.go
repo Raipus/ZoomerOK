@@ -52,7 +52,7 @@ func GetUser(c *gin.Context, db postgres.PostgresInterface) {
 		})
 		return
 	}
-	var friendStatus string = ""
+	friendStatus := ""
 	if userId != user.Id { // Это страница не нашего аккаунта
 		checkFriendStatusString, err := db.CheckUserFriend(userId, user.Id)
 		if err != nil {

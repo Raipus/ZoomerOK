@@ -12,6 +12,7 @@ interface PostsState {
 
 export const usePostsStore = defineStore('posts', {
   state: (): PostsState => ({
+    userPosts: [],
     posts: [],
     currentPost: null,
     comments: [],
@@ -38,7 +39,7 @@ export const usePostsStore = defineStore('posts', {
       try {
         this.loading = true
         const data = await PostsApi.getUserPosts(userId, page)
-        this.posts = Array.isArray(data) ? data : []
+        this.userPosts = Array.isArray(data) ? data : []
         this.error = null
       } catch (error) {
         this.error = 'Ошибка загрузки постов пользователя'

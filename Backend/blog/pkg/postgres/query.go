@@ -25,10 +25,10 @@ func (Instance *RealPostgres) CreatePost(userId int, text string, image []byte) 
 func (Instance *RealPostgres) DeletePost(userId int, postId int) error {
 	var post Post
 	if err := Instance.instance.First(&post, postId).Error; err != nil {
-		return errors.New("Пользователь не имеет права на данную операцию")
+		return errors.New("пользователь не имеет права на данную операцию")
 	}
 	if post.UserId != userId {
-		return errors.New("Пользователь не имеет права на данную операцию")
+		return errors.New("пользователь не имеет права на данную операцию")
 	}
 	return Instance.instance.Delete(&post).Error
 }
@@ -46,10 +46,10 @@ func (Instance *RealPostgres) CreateComment(userId, postId int, text string) err
 func (Instance *RealPostgres) DeleteComment(userId int, commentId int) error {
 	var comment Comment
 	if err := Instance.instance.First(&comment, commentId).Error; err != nil {
-		return errors.New("Пользователь не имеет права на данную операцию")
+		return errors.New("пользователь не имеет права на данную операцию")
 	}
 	if comment.UserId != userId {
-		return errors.New("Пользователь не имеет права на данную операцию")
+		return errors.New("пользователь не имеет права на данную операцию")
 	}
 	return Instance.instance.Delete(&comment).Error
 }
@@ -80,7 +80,7 @@ func (Instance *RealPostgres) GetCountCommentsAndLikes(postIds []int) (map[int]i
 	likeCountMap := make(map[int]int)
 
 	var commentCounts []struct {
-		PostId int
+		PostId       int
 		CommentCount int64
 	}
 
@@ -98,7 +98,7 @@ func (Instance *RealPostgres) GetCountCommentsAndLikes(postIds []int) (map[int]i
 	}
 
 	var likeCounts []struct {
-		PostId int
+		PostId    int
 		LikeCount int64
 	}
 

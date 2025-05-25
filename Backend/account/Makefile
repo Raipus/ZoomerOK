@@ -6,3 +6,6 @@ test:
 
 proto:
 	protoc -I ./pkg/broker/pb/ --go_out=. ./pkg/broker/pb/*.proto
+
+lint:
+	golangci-lint run

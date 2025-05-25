@@ -2,7 +2,6 @@ package handlers_test
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -40,7 +39,6 @@ func TestCreateComment(t *testing.T) {
 	// Создадим запрос
 	req, _ := http.NewRequest("POST", "/post/"+postId+"/create_comment", bytes.NewReader(jsonValue))
 	req.Header.Set("Authorization", "Bearer testtoken")
-	req = req.WithContext(context.WithValue(req.Context(), "user_id", float64(userId)))
 
 	// Запишем ответ
 	w := httptest.NewRecorder()

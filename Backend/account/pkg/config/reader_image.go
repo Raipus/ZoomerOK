@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 )
@@ -12,9 +11,13 @@ func readImageToBytes(imagePath string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при открытии файла: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("Ошибка при закрытии файла: %v", err)
+		}
+	}()
 
-	imageData, err := ioutil.ReadFile(imagePath)
+	imageData, err := os.ReadFile(imagePath)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка при чтении файла: %w", err)
 	}

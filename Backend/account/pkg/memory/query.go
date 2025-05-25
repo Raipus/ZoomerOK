@@ -171,7 +171,7 @@ func (r *RealRedis) GetAuthorization(token string) RedisAuthorization {
 		userId = -1
 	}
 
-	var confirmedEmail bool = false
+	confirmedEmail := false
 	strConfirmedEmail := userData[3].(string)
 	log.Println(234)
 	if strConfirmedEmail == "1" {

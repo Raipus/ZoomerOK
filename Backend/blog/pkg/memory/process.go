@@ -8,15 +8,19 @@ import (
 	"github.com/Raipus/ZoomerOK/blog/pkg/broker/pb"
 )
 
-func (store *MessageStore) ProcessAuthorization(authorizationRequest *pb.AuthorizationRequest) (pb.AuthorizationResponse, error) {
-	authResultChan := make(chan pb.AuthorizationResponse)
+func (store *MessageStore) ProcessAuthorization(authorizationRequest *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
+	authResultChan := make(chan *pb.AuthorizationResponse)
 	errorChan := make(chan error)
 
 	go func() {
 		time.Sleep(time.Millisecond * 100)
 		response, exists := store.GetMessage("a" + authorizationRequest.Token)
 		if exists {
-			authResultChan <- response.(pb.AuthorizationResponse)
+			if authResponse, ok := response.(*pb.AuthorizationResponse); ok {
+				authResultChan <- authResponse
+			} else {
+				errorChan <- fmt.Errorf("invalid type for authorization response")
+			}
 		} else {
 			errorChan <- fmt.Errorf("authorization response not found")
 		}
@@ -26,21 +30,25 @@ func (store *MessageStore) ProcessAuthorization(authorizationRequest *pb.Authori
 	case authorizationResponse := <-authResultChan:
 		return authorizationResponse, nil
 	case err := <-errorChan:
-		return pb.AuthorizationResponse{}, err
+		return nil, err
 	case <-time.After(time.Millisecond * 110):
-		return pb.AuthorizationResponse{}, fmt.Errorf("authorization timeout")
+		return nil, fmt.Errorf("authorization timeout")
 	}
 }
 
-func (store *MessageStore) ProcessPushUserFriend(getUserFriendRequest *pb.GetUserFriendRequest) (pb.GetUserFriendResponse, error) {
-	friendResultChan := make(chan pb.GetUserFriendResponse)
+func (store *MessageStore) ProcessPushUserFriend(getUserFriendRequest *pb.GetUserFriendRequest) (*pb.GetUserFriendResponse, error) {
+	friendResultChan := make(chan *pb.GetUserFriendResponse)
 	errorChan := make(chan error)
 
 	go func() {
 		time.Sleep(time.Millisecond * 100)
 		response, exists := store.GetMessage("f" + strconv.Itoa(int(getUserFriendRequest.Id)))
 		if exists {
-			friendResultChan <- response.(pb.GetUserFriendResponse)
+			if friendResponse, ok := response.(*pb.GetUserFriendResponse); ok {
+				friendResultChan <- friendResponse
+			} else {
+				errorChan <- fmt.Errorf("invalid type for friend response")
+			}
 		} else {
 			errorChan <- fmt.Errorf("friend response not found")
 		}
@@ -50,14 +58,14 @@ func (store *MessageStore) ProcessPushUserFriend(getUserFriendRequest *pb.GetUse
 	case friendResponse := <-friendResultChan:
 		return friendResponse, nil
 	case err := <-errorChan:
-		return pb.GetUserFriendResponse{}, err
+		return nil, err
 	case <-time.After(time.Millisecond * 110):
-		return pb.GetUserFriendResponse{}, fmt.Errorf("push user friend timeout")
+		return nil, fmt.Errorf("push user friend timeout")
 	}
 }
 
-func (store *MessageStore) ProcessPushUsers(getUsersRequest *pb.GetUsersRequest) (pb.GetUsersResponse, error) {
-	usersResultChan := make(chan pb.GetUsersResponse)
+func (store *MessageStore) ProcessPushUsers(getUsersRequest *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
+	usersResultChan := make(chan *pb.GetUsersResponse)
 	errorChan := make(chan error)
 
 	go func() {
@@ -73,28 +81,36 @@ func (store *MessageStore) ProcessPushUsers(getUsersRequest *pb.GetUsersRequest)
 			errorChan <- fmt.Errorf("user responses not found for ids: %v", getUsersRequest.Ids)
 			return
 		}
-		usersResultChan <- response.(pb.GetUsersResponse)
+		if usersResponse, ok := response.(*pb.GetUsersResponse); ok {
+			usersResultChan <- usersResponse
+		} else {
+			errorChan <- fmt.Errorf("invalid type for users response")
+		}
 	}()
 
 	select {
 	case usersResponse := <-usersResultChan:
 		return usersResponse, nil
 	case err := <-errorChan:
-		return pb.GetUsersResponse{}, err
+		return nil, err
 	case <-time.After(time.Millisecond * 110):
-		return pb.GetUsersResponse{}, fmt.Errorf("push users timeout")
+		return nil, fmt.Errorf("push users timeout")
 	}
 }
 
-func (store *MessageStore) ProcessPushUser(getUserRequest *pb.GetUserRequest) (pb.GetUserResponse, error) {
-	userResultChan := make(chan pb.GetUserResponse)
+func (store *MessageStore) ProcessPushUser(getUserRequest *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	userResultChan := make(chan *pb.GetUserResponse)
 	errorChan := make(chan error)
 
 	go func() {
 		time.Sleep(time.Millisecond * 100)
 		response, exists := store.GetMessage("u" + strconv.Itoa(int(getUserRequest.Id)))
 		if exists {
-			userResultChan <- response.(pb.GetUserResponse)
+			if userResponse, ok := response.(*pb.GetUserResponse); ok {
+				userResultChan <- userResponse
+			} else {
+				errorChan <- fmt.Errorf("invalid type for user response")
+			}
 		} else {
 			errorChan <- fmt.Errorf("user response not found")
 		}
@@ -104,8 +120,8 @@ func (store *MessageStore) ProcessPushUser(getUserRequest *pb.GetUserRequest) (p
 	case userResponse := <-userResultChan:
 		return userResponse, nil
 	case err := <-errorChan:
-		return pb.GetUserResponse{}, err
+		return nil, err
 	case <-time.After(time.Millisecond * 110):
-		return pb.GetUserResponse{}, fmt.Errorf("push user timeout")
+		return nil, fmt.Errorf("push user timeout")
 	}
 }

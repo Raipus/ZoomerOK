@@ -20,7 +20,7 @@ func TestDeleteFriend(t *testing.T) {
 	mockPostgres := new(postgres.MockPostgres)
 	mockRedis := new(memory.MockRedis)
 
-	var userId int = 1
+	userId := 1
 	deleteFriendData := handlers.DeleteFriendForm{
 		FriendUserId: 2,
 	}

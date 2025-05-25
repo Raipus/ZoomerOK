@@ -36,7 +36,7 @@ func TestSignup(t *testing.T) {
 
 	birthday := time.Now()
 	byteImage := config.Config.Photo.ByteImage
-	var token string = "new-token"
+	token := "new-token"
 	user := postgres.User{
 		Id:             1,
 		Login:          "testuser",

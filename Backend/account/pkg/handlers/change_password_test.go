@@ -26,7 +26,7 @@ func TestChangePassword(t *testing.T) {
 	}
 
 	birthday := time.Now()
-	var login string = "testuser"
+	login := "testuser"
 	user := postgres.User{
 		Id:             1,
 		Login:          login,
@@ -39,7 +39,7 @@ func TestChangePassword(t *testing.T) {
 		City:           "Москва",
 		Image:          nil,
 	}
-	var resetLink string = "someResetLink"
+	resetLink := "someResetLink"
 	mockPostgres.On("GetUserByLogin", login).Return(user)
 	mockPostgres.On("ChangePassword", &user, changePasswordData.NewPassword).Return(nil)
 	mockCache.On("GetCacheResetLink", resetLink).Return(login)
@@ -76,7 +76,7 @@ func TestChangePasswordWithNoLogin(t *testing.T) {
 		NewPassword: "newsecurepassword",
 	}
 
-	var resetLink string = "reset"
+	resetLink := "reset"
 	mockCache.On("GetCacheResetLink", resetLink).Return("")
 
 	jsonData, err := json.Marshal(changePasswordData)

@@ -1,7 +1,6 @@
 package handlers_test
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -31,7 +30,6 @@ func TestDeletePost(t *testing.T) {
 
 	req, _ := http.NewRequest("DELETE", "/post/"+strconv.Itoa(postId), nil)
 	req.Header.Set("Authorization", "Bearer testtoken")
-	req = req.WithContext(context.WithValue(req.Context(), "user_id", float64(userId)))
 
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)

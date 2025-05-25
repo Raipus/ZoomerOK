@@ -72,7 +72,7 @@ func AuthMiddleware(db postgres.PostgresInterface) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Пользователь не найден!"})
 			log.Println("Пользователь не найден")
 			return
-		} else if loginUser.ConfirmedEmail == false && !strings.Contains(c.Request.URL.Path, "confirm_email") {
+		} else if !loginUser.ConfirmedEmail && !strings.Contains(c.Request.URL.Path, "confirm_email") {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Почта не подтверждена!"})
 			log.Println("Почта не подтверждена")
 			return

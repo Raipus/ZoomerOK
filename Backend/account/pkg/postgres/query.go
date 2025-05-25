@@ -71,7 +71,7 @@ func (Instance *RealPostgres) Signup(login, name, email, password string) (User,
 	}
 
 	createdUser, created := Instance.CreateUser(&user)
-	if created == false {
+	if !created {
 		return User{}, "", false
 	}
 
@@ -138,7 +138,7 @@ func (Instance *RealPostgres) AcceptFriendRequest(id1 int, id2 int) error {
 		return fmt.Errorf("ошибка при поиске запроса в друзья: %w", result.Error)
 	}
 	friend.Accepted = true
-	result = Instance.instance.Save(&friend)
+	Instance.instance.Save(&friend)
 	return nil
 }
 

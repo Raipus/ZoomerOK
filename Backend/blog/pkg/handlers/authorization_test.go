@@ -40,7 +40,7 @@ func TestAuthMiddleware(t *testing.T) {
 		Token:          strToken,
 		ConfirmedEmail: true,
 	}
-	var responseInterface interface{} = authorizationResponse
+	var responseInterface interface{} = &authorizationResponse
 
 	mockBroker.On("Authorization", authorizationRequest).Return(nil)
 	mockMessageStore.On("ProcessAuthorization", authorizationRequest).Return(responseInterface, nil)

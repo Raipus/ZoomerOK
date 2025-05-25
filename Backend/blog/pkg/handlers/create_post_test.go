@@ -2,7 +2,6 @@ package handlers_test
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -35,7 +34,6 @@ func TestCreatePost(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/create_post", bytes.NewReader(jsonValue))
 	req.Header.Set("Authorization", "Bearer testtoken")
-	req = req.WithContext(context.WithValue(req.Context(), "user_id", float64(userId)))
 
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)

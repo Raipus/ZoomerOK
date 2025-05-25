@@ -43,7 +43,7 @@ func TestLogin(t *testing.T) {
 		Image:          byteImage,
 	}
 
-	var token string = "new-token"
+	token := "new-token"
 	redisAuthorization := memory.RedisAuthorization{
 		UserId:         user.Id,
 		Token:          token,

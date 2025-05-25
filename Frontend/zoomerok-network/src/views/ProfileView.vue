@@ -1,6 +1,6 @@
 <template>
   <profile-header v-if="user.id" :user="user" :friends="friends" :realLogin="realLogin" />
-  <div class="flex justify-center" v-if="posts.length === 0">
+  <div class="flex justify-center" v-if="userPosts.length === 0">
     <div
       class="w-[610px] min-h-[83px] mt-[24px] bg-[#7500DB] rounded-[40px] grid items-center place-content-center p-[14px]"
     >
@@ -17,7 +17,7 @@
   </div>
   <post-composer v-if="user.login === realLogin" />
   <div>
-    <post-item v-for="post in posts" :key="post.id" :post="post" />
+    <post-item v-for="post in userPosts" :key="post.id" :post="post" />
     <div class="flex justify-center" v-if="loading">
       <v-progress-circular indeterminate class="my-5" />
     </div>
@@ -72,5 +72,5 @@ watch(
 )
 
 const { user, friends } = storeToRefs(userStore)
-const { posts, loading } = storeToRefs(postStore)
+const { userPosts, loading } = storeToRefs(postStore)
 </script>

@@ -30,7 +30,7 @@ func (broker *RealBroker) Listen() {
 				log.Println("error: cannot deserialize AuthorizationResponse data")
 				continue
 			}
-			broker.HandleAuthorizationResponse(string(m.Key[:]), response)
+			broker.HandleAuthorizationResponse(string(m.Key[:]), &response)
 		case 's': // использует первый байт сообщения
 			var response pb.GetUsersResponse
 			err = proto.Unmarshal(value, &response)
@@ -38,7 +38,7 @@ func (broker *RealBroker) Listen() {
 				log.Println("error: cannot deserialize GetUsersResponse data")
 				continue
 			}
-			broker.HandleGetUsersResponse(string(m.Key[:]), response)
+			broker.HandleGetUsersResponse(string(m.Key[:]), &response)
 		case 'u': // использует первый байт сообщения
 			var response pb.GetUserResponse
 			err = proto.Unmarshal(value, &response)
@@ -46,7 +46,7 @@ func (broker *RealBroker) Listen() {
 				log.Println("error: cannot deserialize GetUserResponse data")
 				continue
 			}
-			broker.HandleGetUserResponse(string(m.Key[:]), response)
+			broker.HandleGetUserResponse(string(m.Key[:]), &response)
 		case 'f': // использует первый байт сообщения
 			var friendResponse pb.GetUserFriendResponse
 			err = proto.Unmarshal(value, &friendResponse)
@@ -54,25 +54,41 @@ func (broker *RealBroker) Listen() {
 				log.Println("error: cannot deserialize GetUserFriendResponse data")
 				continue
 			}
-			broker.HandleGetUserFriendResponse(string(m.Key[:]), friendResponse)
+			broker.HandleGetUserFriendResponse(string(m.Key[:]), &friendResponse)
 		default:
 			log.Println("unknown message type")
 		}
 	}
 }
 
-func (broker *RealBroker) HandleAuthorizationResponse(key string, response pb.AuthorizationResponse) {
-	memory.ProductionMessageStore.SaveMessage(key, response)
+func (broker *RealBroker) HandleAuthorizationResponse(key string, response *pb.AuthorizationResponse) {
+	err := memory.ProductionMessageStore.SaveMessage(key, response)
+	if err != nil {
+		log.Printf("Ошибка при сохранении сообщения: %v", err)
+		return
+	}
 }
 
-func (broker *RealBroker) HandleGetUserResponse(key string, response pb.GetUserResponse) {
-	memory.ProductionMessageStore.SaveMessage(key, response)
+func (broker *RealBroker) HandleGetUserResponse(key string, response *pb.GetUserResponse) {
+	err := memory.ProductionMessageStore.SaveMessage(key, response)
+	if err != nil {
+		log.Printf("Ошибка при сохранении сообщения: %v", err)
+		return
+	}
 }
 
-func (broker *RealBroker) HandleGetUsersResponse(key string, response pb.GetUsersResponse) {
-	memory.ProductionMessageStore.SaveMessage(key, response)
+func (broker *RealBroker) HandleGetUsersResponse(key string, response *pb.GetUsersResponse) {
+	err := memory.ProductionMessageStore.SaveMessage(key, response)
+	if err != nil {
+		log.Printf("Ошибка при сохранении сообщения: %v", err)
+		return
+	}
 }
 
-func (broker *RealBroker) HandleGetUserFriendResponse(key string, response pb.GetUserFriendResponse) {
-	memory.ProductionMessageStore.SaveMessage(key, response)
+func (broker *RealBroker) HandleGetUserFriendResponse(key string, response *pb.GetUserFriendResponse) {
+	err := memory.ProductionMessageStore.SaveMessage(key, response)
+	if err != nil {
+		log.Printf("Ошибка при сохранении сообщения: %v", err)
+		return
+	}
 }

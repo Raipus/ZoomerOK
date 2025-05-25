@@ -22,7 +22,7 @@ func TestChangeUser(t *testing.T) {
 	mockPostgres := new(postgres.MockPostgres)
 	mockRedis := new(memory.MockRedis)
 
-	var login string = "testuser"
+	login := "testuser"
 	birthday := time.Date(2025, 5, 6, 21, 50, 36, 113918233, time.UTC)
 	byteImage := config.Config.Photo.ByteImage
 	user := postgres.User{

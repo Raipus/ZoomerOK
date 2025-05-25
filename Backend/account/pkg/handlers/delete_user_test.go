@@ -17,7 +17,7 @@ import (
 func TestDeleteUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := router.SetupRouter(false)
-	var token string = "my_token"
+	token := "my_token"
 	r.Use(func(c *gin.Context) {
 		c.Set("token", token)
 		c.Next()
@@ -25,7 +25,7 @@ func TestDeleteUser(t *testing.T) {
 	mockPostgres := new(postgres.MockPostgres)
 	mockRedis := new(memory.MockRedis)
 
-	var login string = "testuser"
+	login := "testuser"
 	birthday := time.Now()
 	user := postgres.User{
 		Id:             1,

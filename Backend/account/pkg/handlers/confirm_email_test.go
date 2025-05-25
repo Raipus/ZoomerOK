@@ -24,7 +24,7 @@ func TestConfirmEmailWithLogin(t *testing.T) {
 
 	confirmationLink := "someResetLink"
 	login := "testuser"
-	var token string = "new-token"
+	token := "new-token"
 
 	r.Use(func(c *gin.Context) {
 		c.Set("token", token)

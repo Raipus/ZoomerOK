@@ -1,7 +1,6 @@
 package handlers_test
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -37,12 +36,11 @@ func TestGetPost(t *testing.T) {
 	date := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
 	mockPostgres.On("GetPost", postId).Return(&postgres.Post{Id: postId, Text: "Тестовый пост", Image: []byte{}, Time: &date}, nil)
 	mockBroker.On("PushUser", mock.Anything).Return(nil)
-	mockMessageStore.On("ProcessPushUser", mock.Anything).Return(pb.GetUserResponse{Id: 1, Login: "testuser", Name: "Тест", Image: ""}, nil)
+	mockMessageStore.On("ProcessPushUser", mock.Anything).Return(&pb.GetUserResponse{Id: 1, Login: "testuser", Name: "Тест", Image: ""}, nil)
 	mockPostgres.On("GetCountCommentsAndLikes", []int{postId}).Return(commentCountMap, likeCountMap, nil)
 
 	req, _ := http.NewRequest("GET", "/post/"+strconv.Itoa(postId), nil)
 	req.Header.Set("Authorization", "Bearer testtoken")
-	req = req.WithContext(context.WithValue(req.Context(), "user_id", float64(1)))
 
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)

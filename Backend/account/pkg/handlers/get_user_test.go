@@ -18,7 +18,7 @@ func TestGetUserMyAccount(t *testing.T) {
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 
-	var userId int = 1
+	userId := 1
 	r.Use(func(c *gin.Context) {
 		c.Set("user_id", float64(userId))
 		c.Next()
@@ -28,7 +28,7 @@ func TestGetUserMyAccount(t *testing.T) {
 		handlers.GetUser(c, mockPostgres)
 	})
 
-	var login string = "testuser"
+	login := "testuser"
 	birthday := time.Now()
 	user := postgres.User{
 		Id:             1,
@@ -72,7 +72,7 @@ func TestGetUserNotMyAccount(t *testing.T) {
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 
-	var userId int = 1
+	userId := 1
 	r.Use(func(c *gin.Context) {
 		c.Set("user_id", float64(userId))
 		c.Next()
@@ -82,7 +82,7 @@ func TestGetUserNotMyAccount(t *testing.T) {
 		handlers.GetUser(c, mockPostgres)
 	})
 
-	var login string = "testuser"
+	login := "testuser"
 	birthday := time.Now()
 	user := postgres.User{
 		Id:             2,

@@ -11,10 +11,7 @@ func (Instance *RealPostgres) CreateUser(user *User) (User, bool) {
 
 func (Instance *RealPostgres) ChangeUser(user *User) bool {
 	result := Instance.instance.Save(user)
-	if result.Error != nil {
-		return false
-	}
-	return true
+	return result.Error == nil
 }
 
 func (Instance *RealPostgres) UpdateUserPassword(user *User, newPassword string) error {

@@ -16,7 +16,7 @@ func (broker *RealBroker) Listen() {
 		time.Sleep(time.Millisecond)
 		m, err := broker.reader.ReadMessage(context.Background())
 		if err != nil {
-			log.Fatal("error while receiving message: %s", err.Error())
+			log.Printf("error while receiving message: %s", err.Error())
 			continue
 		}
 
@@ -30,7 +30,7 @@ func (broker *RealBroker) Listen() {
 				log.Println("error: cannot deserialize AuthorizationRequest data")
 				continue
 			}
-			broker.HandleAuthorizationRequest(request)
+			broker.HandleAuthorizationRequest(&request)
 		case 'u': // использует первый байт сообщения
 			var request pb.GetUserRequest
 			err = proto.Unmarshal(value, &request)
@@ -38,7 +38,7 @@ func (broker *RealBroker) Listen() {
 				log.Println("error: cannot deserialize GetUserRequest data")
 				continue
 			}
-			broker.HandleGetUserRequest(request)
+			broker.HandleGetUserRequest(&request)
 		case 's':
 			var request pb.GetUsersRequest
 			err = proto.Unmarshal(value, &request)
@@ -46,7 +46,7 @@ func (broker *RealBroker) Listen() {
 				log.Println("error: cannot deserialize GetUsersResponse data")
 				continue
 			}
-			broker.HandleGetUsersRequest(request)
+			broker.HandleGetUsersRequest(&request)
 		case 'f': // использует первый байт сообщения
 			var friendRequest pb.GetUserFriendRequest
 			err = proto.Unmarshal(value, &friendRequest)
@@ -54,14 +54,14 @@ func (broker *RealBroker) Listen() {
 				log.Println("error: cannot deserialize GetUserFriendRequest data")
 				continue
 			}
-			broker.HandleGetUserFriendRequest(friendRequest)
+			broker.HandleGetUserFriendRequest(&friendRequest)
 		default:
 			log.Println("unknown message type")
 		}
 	}
 }
 
-func (broker *RealBroker) HandleAuthorizationRequest(request pb.AuthorizationRequest) {
+func (broker *RealBroker) HandleAuthorizationRequest(request *pb.AuthorizationRequest) {
 	authorization := broker.mem.GetAuthorization(request.Token)
 
 	var response *pb.AuthorizationResponse
@@ -84,10 +84,14 @@ func (broker *RealBroker) HandleAuthorizationRequest(request pb.AuthorizationReq
 	}
 
 	log.Println(response)
-	broker.Authorization(response)
+	err := broker.Authorization(response)
+	if err != nil {
+		log.Printf("Ошибка при отправки сообщения: %v", err)
+		return
+	}
 }
 
-func (broker *RealBroker) HandleGetUserRequest(request pb.GetUserRequest) {
+func (broker *RealBroker) HandleGetUserRequest(request *pb.GetUserRequest) {
 	user := broker.mem.GetUser(int(request.Id))
 
 	var response *pb.GetUserResponse
@@ -108,10 +112,14 @@ func (broker *RealBroker) HandleGetUserRequest(request pb.GetUserRequest) {
 	}
 
 	log.Println(response)
-	broker.PushUser(response)
+	err := broker.PushUser(response)
+	if err != nil {
+		log.Printf("Ошибка при отправки сообщения: %v", err)
+		return
+	}
 }
 
-func (broker *RealBroker) HandleGetUsersRequest(request pb.GetUsersRequest) {
+func (broker *RealBroker) HandleGetUsersRequest(request *pb.GetUsersRequest) {
 	IntUsersIds := make([]int, len(request.Ids))
 
 	for i, v := range request.Ids {
@@ -142,10 +150,14 @@ func (broker *RealBroker) HandleGetUsersRequest(request pb.GetUsersRequest) {
 	}
 
 	log.Println(response)
-	broker.PushUsers(response)
+	err := broker.PushUsers(response)
+	if err != nil {
+		log.Printf("Ошибка при отправки сообщения: %v", err)
+		return
+	}
 }
 
-func (broker *RealBroker) HandleGetUserFriendRequest(request pb.GetUserFriendRequest) {
+func (broker *RealBroker) HandleGetUserFriendRequest(request *pb.GetUserFriendRequest) {
 	friends := broker.mem.GetUserFriends(int(request.Id))
 
 	var response *pb.GetUserFriendResponse
@@ -168,5 +180,9 @@ func (broker *RealBroker) HandleGetUserFriendRequest(request pb.GetUserFriendReq
 	}
 
 	log.Println(response)
-	broker.PushUserFriend(response)
+	err := broker.PushUserFriend(response)
+	if err != nil {
+		log.Printf("Ошибка при отправки сообщения: %v", err)
+		return
+	}
 }

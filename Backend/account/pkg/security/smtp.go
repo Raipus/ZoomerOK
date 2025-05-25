@@ -40,7 +40,7 @@ func initSMTP() smtp.Auth {
 
 func (Smtp *RealSMTP) SendConfirmEmail(login, email string, cache caching.CachingInterface) error {
 	code := GenerateLink()
-	var confirmationLink string = config.Config.FrontendLink + "/confirming-email/" + code
+	confirmationLink := config.Config.FrontendLink + "/confirming-email/" + code
 	confirmEmailMessage := []byte(fmt.Sprintf(
 		"Здравствуйте, %s!\n\n"+
 			"Спасибо за регистрацию на нашем сайте. Чтобы активировать вашу учетную запись, пожалуйста, подтвердите свой адрес электронной почты, перейдя по следующей ссылке:\n\n"+
@@ -53,7 +53,7 @@ func (Smtp *RealSMTP) SendConfirmEmail(login, email string, cache caching.Cachin
 	cache.SetCacheConfirmationLink(login, code)
 	log.Println("code:", code)
 
-	var subject string = "Подтверждение электронной почты ZoomerOk"
+	subject := "Подтверждение электронной почты ZoomerOk"
 	headers := []byte("From: " + config.Config.SmtpUsername + "\n" +
 		"To: " + email + "\n" +
 		"Subject: " + subject + "\n" +
@@ -66,7 +66,7 @@ func (Smtp *RealSMTP) SendConfirmEmail(login, email string, cache caching.Cachin
 
 func (Smtp *RealSMTP) SendChangePassword(login, email string, cache caching.CachingInterface) error {
 	code := GenerateLink()
-	var resetLink string = config.Config.FrontendLink + "/changing-password/" + code
+	resetLink := config.Config.FrontendLink + "/changing-password/" + code
 
 	changePasswordMessage := []byte(fmt.Sprintf(
 		"Здравствуйте, %s!\n\n"+
@@ -80,7 +80,7 @@ func (Smtp *RealSMTP) SendChangePassword(login, email string, cache caching.Cach
 	cache.SetCacheResetLink(login, code)
 	log.Println(code)
 
-	var subject string = "Подтверждение смены пароля ZoomerOk"
+	subject := "Подтверждение смены пароля ZoomerOk"
 	headers := []byte("From: " + config.Config.SmtpUsername + "\n" +
 		"To: " + email + "\n" +
 		"Subject: " + subject + "\n" +
@@ -92,7 +92,7 @@ func (Smtp *RealSMTP) SendChangePassword(login, email string, cache caching.Cach
 }
 
 func GenerateLink() string {
-	var seededRand *rand.Rand = rand.New(
+	var seededRand = rand.New(
 		rand.NewSource(time.Now().UnixNano()))
 	b := make([]byte, config.Config.GenerateLinkLength)
 	for i := range b {

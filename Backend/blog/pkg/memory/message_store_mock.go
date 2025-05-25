@@ -19,22 +19,22 @@ func (m *MockMessageStore) GetMessage(key string) (interface{}, bool) {
 	return args.Get(0), args.Bool(1)
 }
 
-func (m *MockMessageStore) ProcessAuthorization(authorizationRequest *pb.AuthorizationRequest) (pb.AuthorizationResponse, error) {
+func (m *MockMessageStore) ProcessAuthorization(authorizationRequest *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
 	args := m.Called(authorizationRequest)
-	return args.Get(0).(pb.AuthorizationResponse), args.Error(1)
+	return args.Get(0).(*pb.AuthorizationResponse), args.Error(1)
 }
 
-func (m *MockMessageStore) ProcessPushUserFriend(getUserFriendRequest *pb.GetUserFriendRequest) (pb.GetUserFriendResponse, error) {
+func (m *MockMessageStore) ProcessPushUserFriend(getUserFriendRequest *pb.GetUserFriendRequest) (*pb.GetUserFriendResponse, error) {
 	args := m.Called(getUserFriendRequest)
-	return args.Get(0).(pb.GetUserFriendResponse), args.Error(1)
+	return args.Get(0).(*pb.GetUserFriendResponse), args.Error(1)
 }
 
-func (m *MockMessageStore) ProcessPushUsers(getUsersRequest *pb.GetUsersRequest) (pb.GetUsersResponse, error) {
+func (m *MockMessageStore) ProcessPushUsers(getUsersRequest *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
 	args := m.Called(getUsersRequest)
-	return args.Get(0).(pb.GetUsersResponse), args.Error(1)
+	return args.Get(0).(*pb.GetUsersResponse), args.Error(1)
 }
 
-func (m *MockMessageStore) ProcessPushUser(getUserRequest *pb.GetUserRequest) (pb.GetUserResponse, error) {
+func (m *MockMessageStore) ProcessPushUser(getUserRequest *pb.GetUserRequest) (*pb.GetUserResponse, error) {
 	args := m.Called(getUserRequest)
-	return args.Get(0).(pb.GetUserResponse), args.Error(1)
+	return args.Get(0).(*pb.GetUserResponse), args.Error(1)
 }

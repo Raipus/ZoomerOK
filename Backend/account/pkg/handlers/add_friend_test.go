@@ -18,7 +18,7 @@ func TestAddFriend(t *testing.T) {
 	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 
-	var userId int = 1
+	userId := 1
 	acceptFriendData := handlers.AddFriendForm{
 		FriendUserId: 2,
 	}

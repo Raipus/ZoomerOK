@@ -10,10 +10,10 @@ import (
 type MessageStoreInterface interface {
 	SaveMessage(key string, message interface{}) error
 	GetMessage(key string) (interface{}, bool)
-	ProcessAuthorization(authorizationRequest *pb.AuthorizationRequest) (pb.AuthorizationResponse, error)
-	ProcessPushUserFriend(getUserFriendRequest *pb.GetUserFriendRequest) (pb.GetUserFriendResponse, error)
-	ProcessPushUsers(getUsersRequest *pb.GetUsersRequest) (pb.GetUsersResponse, error)
-	ProcessPushUser(getUserRequest *pb.GetUserRequest) (pb.GetUserResponse, error)
+	ProcessAuthorization(authorizationRequest *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error)
+	ProcessPushUserFriend(getUserFriendRequest *pb.GetUserFriendRequest) (*pb.GetUserFriendResponse, error)
+	ProcessPushUsers(getUsersRequest *pb.GetUsersRequest) (*pb.GetUsersResponse, error)
+	ProcessPushUser(getUserRequest *pb.GetUserRequest) (*pb.GetUserResponse, error)
 }
 
 type MessageStore struct {

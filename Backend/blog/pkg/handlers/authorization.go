@@ -53,7 +53,7 @@ func AuthMiddleware(broker broker.BrokerInterface, messageStore memory.MessageSt
 			return
 		}
 
-		log.Println("authorizationResponse", authorizationResponse)
+		log.Println("authorizationResponse", &authorizationResponse)
 		if authorizationResponse.Id == 0 {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid response"})
 			log.Println("Empty response from message queue")
