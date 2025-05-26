@@ -3,6 +3,12 @@ ACCOUNT_DIR := account
 
 all: test lint
 
+verify:
+	@echo "Проверка зависимостей для микросервиса blog..."
+	$(MAKE) -C $(BLOG_DIR) verify
+	@echo "Проверка зависимостей для микросервиса account..."
+	$(MAKE) -C $(ACCOUNT_DIR) verify
+
 test:
 	@echo "Запуск тестов для микросервиса blog..."
 	$(MAKE) -C $(BLOG_DIR) test

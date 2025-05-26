@@ -22,7 +22,7 @@ jobs:
           go-version: 1.24
       
       - name: Verify dependencies
-        run: go mod verify
+        run: make verify
 
       - name: Cache Go modules
         uses: actions/cache@v3
