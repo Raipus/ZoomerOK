@@ -20,7 +20,27 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.24
-      
+      # Кэш для golangci-lint
+      - name: Cache golangci-lint binary
+        id: cache-golangci-lint
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/golangci-lint
+          key: ${{ runner.os }}-golangci-lint-${{ env.GOLANGCI_LINT_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-golangci-lint-
+
+      - name: Install golangci-lint
+        if: steps.cache-golangci-lint.outputs.cache-hit != 'true'
+        run: |
+          GOLANGCI_LINT_VERSION=2.1.0
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ~/.cache/golangci-lint v${GOLANGCI_LINT_VERSION}
+        env:
+          GOLANGCI_LINT_VERSION: 2.1.0
+
+      - name: Add golangci-lint to PATH
+        run: echo "$HOME/.cache/golangci-lint" >> $GITHUB_PATH
+
       - name: Verify dependencies
         run: make verify
 
