@@ -46,7 +46,7 @@ func AddFriend(c *gin.Context, db postgres.PostgresInterface) {
 
 	userId := int(userIdFloat)
 	if err := db.AddFriendRequest(userId, newAddFriendForm.FriendUserId); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Ошибка сервиса",
 		})
 		return

@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,7 +17,6 @@ import (
 )
 
 func TestAcceptFriend(t *testing.T) {
-	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 	mockRedis := new(memory.MockRedis)
 
@@ -25,43 +25,102 @@ func TestAcceptFriend(t *testing.T) {
 		FriendUserId: 2,
 	}
 
-	redisUserFriendFromMyUserId := memory.RedisUserFriend{
-		UserId:    userId,
-		FriendIds: []int{acceptFriendData.FriendUserId},
-	}
+	t.Run("successful acceptance", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		r.Use(func(c *gin.Context) {
+			c.Set("user_id", float64(userId))
+			c.Next()
+		})
+		r.PUT("/accept_friend", func(c *gin.Context) {
+			handlers.AcceptFriend(c, mockPostgres, mockRedis)
+		})
+		mockPostgres.On("AcceptFriendRequest", userId, acceptFriendData.FriendUserId).Return(nil).Once()
+		mockRedis.On("AddUserFriend", memory.RedisUserFriend{UserId: userId, FriendIds: []int{acceptFriendData.FriendUserId}}).Return(nil)
+		mockRedis.On("AddUserFriend", memory.RedisUserFriend{UserId: acceptFriendData.FriendUserId, FriendIds: []int{userId}}).Return(nil)
 
-	redisUserFriendFromNotMyUserId := memory.RedisUserFriend{
-		UserId:    acceptFriendData.FriendUserId,
-		FriendIds: []int{userId},
-	}
+		jsonData, _ := json.Marshal(acceptFriendData)
+		req, _ := http.NewRequest(http.MethodPut, "/accept_friend", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
 
-	r.Use(func(c *gin.Context) {
-		c.Set("user_id", float64(userId))
-		c.Next()
+		assert.Equal(t, http.StatusNoContent, w.Code)
+		mockPostgres.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
 
-	mockPostgres.On("AcceptFriendRequest", userId, acceptFriendData.FriendUserId).Return(nil)
-	mockRedis.On("AddUserFriend", redisUserFriendFromMyUserId).Return(nil)
-	mockRedis.On("AddUserFriend", redisUserFriendFromNotMyUserId).Return(nil)
+	t.Run("bad request - invalid JSON", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		r.Use(func(c *gin.Context) {
+			c.Set("user_id", float64(userId))
+			c.Next()
+		})
+		r.PUT("/accept_friend", func(c *gin.Context) {
+			handlers.AcceptFriend(c, mockPostgres, mockRedis)
+		})
+		req, _ := http.NewRequest(http.MethodPut, "/accept_friend", bytes.NewBuffer([]byte(`{"friend_user_id": "invalid"}`)))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
 
-	jsonData, err := json.Marshal(acceptFriendData)
-	if err != nil {
-		t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
-	}
-
-	r.PUT("/accept_friend", func(c *gin.Context) {
-		handlers.AcceptFriend(c, mockPostgres, mockRedis)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 
-	req, err := http.NewRequest(http.MethodPut, "/accept_friend", bytes.NewBuffer(jsonData))
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
+	t.Run("internal server error - user ID not found", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		r.Use(func(c *gin.Context) {
+			c.Set("user_id", nil)
+			c.Next()
+		})
+		r.PUT("/accept_friend", func(c *gin.Context) {
+			handlers.AcceptFriend(c, mockPostgres, mockRedis)
+		})
 
-	mockPostgres.AssertExpectations(t)
-	mockRedis.AssertExpectations(t)
+		jsonData, _ := json.Marshal(acceptFriendData)
+		req, _ := http.NewRequest(http.MethodPut, "/accept_friend", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+
+	t.Run("internal server error - invalid user ID format", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		r.Use(func(c *gin.Context) {
+			c.Set("user_id", "invalid")
+			c.Next()
+		})
+		r.PUT("/accept_friend", func(c *gin.Context) {
+			handlers.AcceptFriend(c, mockPostgres, mockRedis)
+		})
+
+		jsonData, _ := json.Marshal(acceptFriendData)
+		req, _ := http.NewRequest(http.MethodPut, "/accept_friend", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+
+	t.Run("bad request - friend request acceptance error", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		r.Use(func(c *gin.Context) {
+			c.Set("user_id", float64(userId))
+			c.Next()
+		})
+		r.PUT("/accept_friend", func(c *gin.Context) {
+			handlers.AcceptFriend(c, mockPostgres, mockRedis)
+		})
+		mockPostgres.On("AcceptFriendRequest", userId, acceptFriendData.FriendUserId).Return(fmt.Errorf("error")).Once()
+
+		jsonData, _ := json.Marshal(acceptFriendData)
+		req, _ := http.NewRequest(http.MethodPut, "/accept_friend", bytes.NewBuffer(jsonData))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
 }

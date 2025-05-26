@@ -34,7 +34,6 @@ func AuthMiddleware(db postgres.PostgresInterface) gin.HandlerFunc {
 		token, err := security.ValidateJWT(tokenString)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-			log.Println("Token validation error:", err)
 			return
 		}
 
@@ -51,7 +50,6 @@ func AuthMiddleware(db postgres.PostgresInterface) gin.HandlerFunc {
 			log.Println("Invalid id claim")
 			return
 		}
-		log.Println("id", id)
 
 		login, ok := claims["login"].(string)
 		if !ok {

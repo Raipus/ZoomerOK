@@ -17,7 +17,6 @@ import (
 )
 
 func TestConfirmEmailWithLogin(t *testing.T) {
-	r := router.SetupRouter(false)
 	mockCache := new(caching.MockCache)
 	mockPostgres := new(postgres.MockPostgres)
 	mockRedis := new(memory.MockRedis)
@@ -26,10 +25,6 @@ func TestConfirmEmailWithLogin(t *testing.T) {
 	login := "testuser"
 	token := "new-token"
 
-	r.Use(func(c *gin.Context) {
-		c.Set("token", token)
-		c.Next()
-	})
 	birthday := time.Now()
 	byteImage := config.Config.Photo.ByteImage
 	user := postgres.User{
@@ -51,61 +46,50 @@ func TestConfirmEmailWithLogin(t *testing.T) {
 		Email:          user.Email,
 		ConfirmedEmail: true,
 	}
-	// Тест для случая, когда username найден
-	mockCache.On("GetCacheConfirmationLink", confirmationLink).Return(login)
-	mockCache.On("DeleteCacheConfirmationLink", confirmationLink).Return()
-	mockPostgres.On("ConfirmEmail", login).Return(user, true)
-	mockRedis.On("SetAuthorization", redisAuthorization).Return()
+	t.Run("successful acceptance", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		r.Use(func(c *gin.Context) {
+			c.Set("token", token)
+			c.Next()
+		})
+		r.PUT("/confirm_email/:confirmation_link", func(c *gin.Context) {
+			handlers.ConfirmEmail(c, mockPostgres, mockCache, mockRedis)
+		})
 
-	// Регистрируем обработчик с использованием mockCache
-	r.PUT("/confirm_email/:confirmation_link", func(c *gin.Context) {
-		handlers.ConfirmEmail(c, mockPostgres, mockCache, mockRedis)
+		mockCache.On("GetCacheConfirmationLink", confirmationLink).Return(login).Once()
+		mockCache.On("DeleteCacheConfirmationLink", confirmationLink).Return().Once()
+		mockPostgres.On("ConfirmEmail", login).Return(user, true).Once()
+		mockRedis.On("SetAuthorization", redisAuthorization).Return().Once()
+
+		req, _ := http.NewRequest(http.MethodPut, "/confirm_email/"+confirmationLink, nil)
+		w := httptest.NewRecorder()
+
+		r.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusNoContent, w.Code)
+
+		mockCache.AssertExpectations(t)
+		mockPostgres.AssertExpectations(t)
+		mockRedis.AssertExpectations(t)
 	})
+	t.Run("not found - User Not found", func(t *testing.T) {
+		mockCache.On("GetCacheConfirmationLink", confirmationLink).Return("").Once()
 
-	// Создаем тестовый запрос
-	req, _ := http.NewRequest(http.MethodPut, "/confirm_email/"+confirmationLink, nil)
-	w := httptest.NewRecorder()
+		r := router.SetupRouter(false)
+		r.Use(func(c *gin.Context) {
+			c.Set("token", token)
+			c.Next()
+		})
+		r.PUT("/confirm_email/:confirmation_link", func(c *gin.Context) {
+			handlers.ConfirmEmail(c, mockPostgres, mockCache, mockRedis)
+		})
 
-	// Выполняем запрос
-	r.ServeHTTP(w, req)
+		req, _ := http.NewRequest(http.MethodPut, "/confirm_email/"+confirmationLink, nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Code)
 
-	// Проверяем статус-код
-	assert.Equal(t, http.StatusNoContent, w.Code)
-
-	// Проверяем, что ожидания выполнены
-	mockCache.AssertExpectations(t)
-	mockPostgres.AssertExpectations(t)
-	mockRedis.AssertExpectations(t)
-}
-
-func TestConfirmEmailWithoutLogin(t *testing.T) {
-	// Устанавливаем режим тестирования для Gin
-	gin.SetMode(gin.TestMode)
-	r := router.SetupRouter(false)
-
-	// Создаем mock для кэширования
-	mockCache := new(caching.MockCache)
-	mockPostgres := new(postgres.MockPostgres)
-	mockRedis := new(memory.MockRedis)
-
-	// Настраиваем тестовые данные
-	confirmationLink := "someResetLink"
-
-	// Тест для случая, когда username не найден
-	mockCache.On("GetCacheConfirmationLink", confirmationLink).Return("")
-
-	// Регистрируем обработчик с использованием mockCache
-	r.GET("/confirm_email/:confirmation_link", func(c *gin.Context) {
-		handlers.ConfirmEmail(c, mockPostgres, mockCache, mockRedis)
+		mockCache.AssertExpectations(t)
+		mockCache.AssertCalled(t, "GetCacheConfirmationLink", confirmationLink)
 	})
-
-	// Создаем тестовый запрос
-	req, _ := http.NewRequest(http.MethodGet, "/confirm_email/"+confirmationLink, nil)
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNotFound, w.Code)
-
-	// Проверяем, что ожидания выполнены
-	mockCache.AssertExpectations(t)
-	mockCache.AssertCalled(t, "GetCacheConfirmationLink", confirmationLink)
 }

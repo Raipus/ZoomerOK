@@ -10,7 +10,6 @@ import (
 	"github.com/Raipus/ZoomerOK/blog/pkg/handlers"
 	"github.com/Raipus/ZoomerOK/blog/pkg/memory"
 	"github.com/Raipus/ZoomerOK/blog/pkg/router"
-	"github.com/Raipus/ZoomerOK/blog/pkg/security"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,16 +19,7 @@ func TestAuthMiddleware(t *testing.T) {
 	mockBroker := new(broker.MockBroker)
 	mockMessageStore := new(memory.MockMessageStore)
 
-	userToken := security.UserToken{
-		Id:    float64(1),
-		Login: "testuser",
-		Email: "testuser@example.com",
-	}
-
-	strToken, err := security.GenerateJWT(userToken)
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
+	strToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3R1c2VyQGV4YW1wbGUuY29tIiwiZXhwIjoxNzQ4NTE4MTUyLCJpZCI6MSwibG9naW4iOiJ0ZXN0dXNlciJ9.oDFERIARPY5JtbiyRomCIJJYhKfZLZ-5BQmNfDqf2zQ"
 	authorizationRequest := &pb.AuthorizationRequest{
 		Token: strToken,
 	}

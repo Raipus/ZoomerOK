@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,14 +18,7 @@ import (
 )
 
 func TestChangePassword(t *testing.T) {
-	r := router.SetupRouter(false)
-	mockPostgres := new(postgres.MockPostgres)
-	mockCache := new(caching.MockCache)
-
-	changePasswordData := handlers.ChangePasswordForm{
-		NewPassword: "newsecurepassword",
-	}
-
+	resetLink := "someResetLink"
 	birthday := time.Now()
 	login := "testuser"
 	user := postgres.User{
@@ -39,64 +33,146 @@ func TestChangePassword(t *testing.T) {
 		City:           "Москва",
 		Image:          nil,
 	}
-	resetLink := "someResetLink"
-	mockPostgres.On("GetUserByLogin", login).Return(user)
-	mockPostgres.On("ChangePassword", &user, changePasswordData.NewPassword).Return(nil)
-	mockCache.On("GetCacheResetLink", resetLink).Return(login)
-	mockCache.On("DeleteCacheResetLink", resetLink)
-
-	jsonData, err := json.Marshal(changePasswordData)
-	if err != nil {
-		t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
-	}
-
-	r.PUT("/change_password/:reset_link", func(c *gin.Context) {
-		handlers.ChangePassword(c, mockPostgres, mockCache)
-	})
-
-	req, err := http.NewRequest("PUT", "/change_password/"+resetLink, bytes.NewBuffer(jsonData))
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNoContent, w.Code)
-
-	mockPostgres.AssertExpectations(t)
-	mockCache.AssertExpectations(t)
-}
-
-func TestChangePasswordWithNoLogin(t *testing.T) {
-	r := router.SetupRouter(false)
 	mockPostgres := new(postgres.MockPostgres)
 	mockCache := new(caching.MockCache)
 
-	changePasswordData := handlers.ChangePasswordForm{
-		NewPassword: "newsecurepassword",
-	}
+	t.Run("successful acceptance", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		r.PUT("/change_password/:reset_link", func(c *gin.Context) {
+			handlers.ChangePassword(c, mockPostgres, mockCache)
+		})
 
-	resetLink := "reset"
-	mockCache.On("GetCacheResetLink", resetLink).Return("")
+		changePasswordData := handlers.ChangePasswordForm{
+			NewPassword: "newsecurepassword",
+		}
+		mockPostgres.On("GetUserByLogin", login).Return(user).Once()
+		mockPostgres.On("ChangePassword", &user, changePasswordData.NewPassword).Return(nil).Once()
+		mockCache.On("GetCacheResetLink", resetLink).Return(login).Once()
+		mockCache.On("DeleteCacheResetLink", resetLink).Once()
 
-	jsonData, err := json.Marshal(changePasswordData)
-	if err != nil {
-		t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
-	}
+		jsonData, err := json.Marshal(changePasswordData)
+		if err != nil {
+			t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
+		}
 
-	r.PUT("/change_password/:reset_link", func(c *gin.Context) {
-		handlers.ChangePassword(c, mockPostgres, mockCache)
+		req, err := http.NewRequest("PUT", "/change_password/"+resetLink, bytes.NewBuffer(jsonData))
+		if err != nil {
+			t.Fatalf("Ошибка при создании запроса: %v", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNoContent, w.Code)
+
+		mockPostgres.AssertExpectations(t)
+		mockCache.AssertExpectations(t)
 	})
+	t.Run("bad request - invalid JSON", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		r.PUT("/change_password/:reset_link", func(c *gin.Context) {
+			handlers.ChangePassword(c, mockPostgres, mockCache)
+		})
 
-	req, err := http.NewRequest("PUT", "/change_password/"+resetLink, bytes.NewBuffer(jsonData))
-	if err != nil {
-		t.Fatalf("Ошибка при создании запроса: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNotFound, w.Code)
+		req, _ := http.NewRequest(http.MethodPut, "/change_password/:reset_link", bytes.NewBuffer([]byte(`{"password": false}`)))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
 
-	mockPostgres.AssertExpectations(t)
-	mockCache.AssertExpectations(t)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+	t.Run("not found - User not found", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		mockPostgres := new(postgres.MockPostgres)
+		mockCache := new(caching.MockCache)
+
+		changePasswordData := handlers.ChangePasswordForm{
+			NewPassword: "newsecurepassword",
+		}
+
+		resetLink := "reset"
+		mockCache.On("GetCacheResetLink", resetLink).Return("").Once()
+
+		jsonData, err := json.Marshal(changePasswordData)
+		if err != nil {
+			t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
+		}
+
+		r.PUT("/change_password/:reset_link", func(c *gin.Context) {
+			handlers.ChangePassword(c, mockPostgres, mockCache)
+		})
+
+		req, err := http.NewRequest("PUT", "/change_password/"+resetLink, bytes.NewBuffer(jsonData))
+		if err != nil {
+			t.Fatalf("Ошибка при создании запроса: %v", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Code)
+		assert.JSONEq(t, `{"error": "User not found"}`, w.Body.String())
+
+		mockPostgres.AssertExpectations(t)
+		mockCache.AssertExpectations(t)
+	})
+	t.Run("bad request - Get User By Login", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		r.PUT("/change_password/:reset_link", func(c *gin.Context) {
+			handlers.ChangePassword(c, mockPostgres, mockCache)
+		})
+
+		changePasswordData := handlers.ChangePasswordForm{
+			NewPassword: "newsecurepassword",
+		}
+		mockPostgres.On("GetUserByLogin", login).Return(postgres.User{}).Once()
+		mockCache.On("GetCacheResetLink", resetLink).Return(login).Once()
+
+		jsonData, err := json.Marshal(changePasswordData)
+		if err != nil {
+			t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
+		}
+
+		req, err := http.NewRequest("PUT", "/change_password/"+resetLink, bytes.NewBuffer(jsonData))
+		if err != nil {
+			t.Fatalf("Ошибка при создании запроса: %v", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, `{"error": "Пользователь не найден"}`, w.Body.String())
+
+		mockPostgres.AssertExpectations(t)
+		mockCache.AssertExpectations(t)
+	})
+	t.Run("bad request - Change Password", func(t *testing.T) {
+		r := router.SetupRouter(false)
+		r.PUT("/change_password/:reset_link", func(c *gin.Context) {
+			handlers.ChangePassword(c, mockPostgres, mockCache)
+		})
+
+		changePasswordData := handlers.ChangePasswordForm{
+			NewPassword: "newsecurepassword",
+		}
+		mockPostgres.On("GetUserByLogin", login).Return(user).Once()
+		mockPostgres.On("ChangePassword", &user, changePasswordData.NewPassword).Return(fmt.Errorf("error")).Once()
+		mockCache.On("GetCacheResetLink", resetLink).Return(login).Once()
+
+		jsonData, err := json.Marshal(changePasswordData)
+		if err != nil {
+			t.Fatalf("Ошибка при преобразовании данных в JSON: %v", err)
+		}
+
+		req, err := http.NewRequest("PUT", "/change_password/"+resetLink, bytes.NewBuffer(jsonData))
+		if err != nil {
+			t.Fatalf("Ошибка при создании запроса: %v", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		assert.JSONEq(t, `{"error": "Ошибка сервера"}`, w.Body.String())
+
+		mockPostgres.AssertExpectations(t)
+		mockCache.AssertExpectations(t)
+	})
 }
